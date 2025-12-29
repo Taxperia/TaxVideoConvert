@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TaxVideoConvert</title>
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; media-src 'self' http: https: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' http: https:;">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="page page-url">
+    <!-- Güncelleme Bildirimi -->
+    <div id="updateNotification" class="update-notification" style="display: none;">
+      <div class="update-content">
+        <div class="update-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+        <div class="update-text">
+          <strong id="updateTitle">Güncelleme Mevcut</strong>
+          <span id="updateMessage">Yeni bir sürüm mevcut</span>
+        </div>
+        <div class="update-progress" id="updateProgressContainer" style="display: none;">
+          <div class="update-progress-bar">
+            <div class="update-progress-fill" id="updateProgressFill"></div>
+          </div>
+          <span id="updateProgressText">0%</span>
+        </div>
+        <div class="update-actions">
+          <button id="updateDownloadBtn" class="update-btn primary">İndir</button>
+          <button id="updateLaterBtn" class="update-btn secondary">Sonra</button>
+          <button id="updateRestartBtn" class="update-btn primary" style="display: none;">Yeniden Başlat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ayarlar Butonu -->
+    <button id="settingsBtn" class="settings-btn" title="Ayarlar">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+
+    <div class="container centered">
+      <h1 id="appTitle">TaxVideoConvert</h1>
+      <p id="enterUrlText">Video bağlantısını gir:</p>
+      <form id="urlForm">
+        <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=... veya kick.com/..." required />
+        <button type="submit" id="continueBtn">Devam</button>
+      </form>
+      <div id="error" class="error"></div>
+      <div class="note" id="usageNote">
+        Sadece kendi içeriklerin ve platform kullanım şartlarına uygun şekilde kullanmalısın.
+      </div>
+    </div>
+
+    <!-- Ayarlar Modalı -->
+    <div id="settingsModal" class="modal-overlay" style="display: none;">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="settingsTitle">Ayarlar</h2>
+          <button id="closeModal" class="modal-close">&times;</button>
+        </div>
+        
+        <div class="modal-tabs">
+          <button class="tab-btn active" data-tab="general" id="generalTabBtn">Genel</button>
+          <button class="tab-btn" data-tab="about" id="aboutTabBtn">Hakkında</button>
+        </div>
+        
+        <div class="modal-content">
+          <!-- Genel Tab -->
+          <div class="tab-content active" id="generalTab">
+            <div class="setting-row">
+              <label id="languageLabel">Dil:</label>
+              <select id="languageSelect">
+                <option value="tr">Türkçe</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            
+            <div class="setting-row">
+              <label id="themeLabel">Tema:</label>
+              <select id="themeSelect">
+                <option value="dark" id="themeDarkOpt">Koyu</option>
+                <option value="light" id="themeLightOpt">Açık</option>
+                <option value="blue" id="themeBlueOpt">Mavi</option>
+                <option value="purple" id="themePurpleOpt">Mor</option>
+              </select>
+            </div>
+            
+            <div class="setting-row">
+              <label id="defaultPathLabel">Varsayılan Kayıt Yolu:</label>
+              <div class="path-input">
+                <input type="text" id="defaultPathInput" readonly />
+                <button id="browsePathBtn">Gözat</button>
+              </div>
+            </div>
+            
+            <div class="setting-actions">
+              <button id="saveSettingsBtn" class="primary">Kaydet</button>
+            </div>
+          </div>
+          
+          <!-- Hakkında Tab -->
+          <div class="tab-content" id="aboutTab">
+            <div class="about-content">
+              <h3>TaxVideoConvert</h3>
+              <p id="aboutText">TaxVideoConvert, YouTube, Kick ve diğer video platformlarından video indirip kırpmanıza olanak tanıyan bir masaüstü uygulamasıdır.</p>
+              <div class="about-info">
+                <p><strong id="versionLabel">Sürüm:</strong> <span id="appVersionDisplay">0.1.2</span></p>
+                <p><strong id="developerLabel">Geliştirici:</strong> Miyotu</p>
+              </div>
+              <div class="update-check-section">
+                <button id="checkUpdateBtn" class="update-check-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span id="checkUpdateText">Güncelleme Kontrol Et</span>
+                </button>
+                <span id="updateStatus" class="update-status"></span>
+              </div>
+              <div class="supported-platforms">
+                <h4>Desteklenen Platformlar:</h4>
+                <ul>
+                  <li>YouTube</li>
+                  <li>Kick</li>
+                  <li>Twitch</li>
+                  <li>Twitter/X</li>
+                  <li>Instagram</li>
+                  <li>TikTok</li>
+                  <li>Ve yt-dlp destekli diğer platformlar...</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./i18n.js"></script>
+    <script src="./themes.js"></script>
+    <script src="./settings.js"></script>
+    <script src="./index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+﻿TaxVideoConvert Lisans Sözleşmesi (EULA) ve Miyotu Yazılım Lisansı
+Sürüm 1.0 – 2025
+Telif Hakkı © 2025 Miyotu – Tüm Hakları Saklıdır
+
+Bu sözleşme, “Miyotu Yazılım Lisansı” (kişisel/öğrenim odaklı kullanım koşulları) ile son kullanıcı lisans sözleşmesi (EULA), garanti-sorumluluk reddi ve üçüncü taraf bileşen bildirimlerini tek bir metinde birleştirir. Kuruluma devam ederek tüm hükümleri kabul etmiş sayılırsınız.
+
+A) Miyotu Yazılım Lisansı (Kişisel/Eğitim Amaçlı)
+1) Tanımlar
+- “Yazılım”: Bu uygulama, kaynak kodları, derlenmiş çıktıları, belgeler ve tüm içeriği.
+- “Lisans Sahibi”: Miyotu.
+- “Kullanıcı”: Yazılımı görüntüleyen, indiren, kuran veya kullanan kişi/kuruluş.
+
+2) Kullanım İzinleri
+- Kaynak kodu görüntüleme ve inceleme.
+- Kişisel veya eğitim amaçlı yerel kopyalama.
+- Yerel ortamda değişiklik yapma ve deneysel çalışmalar.
+
+3) Yasaklı Kullanımlar
+- Yazılımın veya türevlerinin ticari amaçla kullanımı, satışı, kiralanması, lisanslanması, ücretli hizmet olarak sunulması.
+- Kaynak göstermeden dağıtım veya yeniden paylaşım.
+- Telif/attribution ibarelerinin, lisans metninin kaldırılması/değiştirilmesi.
+- Yazılımın sahiplenilmesi veya orijinal eser gibi gösterilmesi.
+
+4) Atıf Zorunluluğu
+- “Bu yazılım Miyotu tarafından geliştirilmiştir.” ifadesi görünür biçimde yer almalıdır.
+- Bu lisans belgesi projeyle birlikte korunmalıdır.
+
+5) Garanti ve Sorumluluk Reddi
+- Yazılım “OLDUĞU GİBİ” sunulur; açık/zımni hiçbir garanti verilmez.
+- Kullanım nedeniyle doğabilecek zararlardan Lisans Sahibi sorumlu tutulamaz.
+- Kullanım riski ve sorumluluğu Kullanıcıya aittir.
+
+6) Fikri Mülkiyet
+- Tüm fikri mülkiyet ve telif hakları Miyotu’ya aittir.
+- Bu lisans mülkiyet devri sağlamaz.
+
+7) Lisansın Sona Ermesi
+- Hükümlere aykırı kullanımda lisans otomatik sona erer; tüm kopyalar imha edilmelidir.
+
+8) Uygulanabilir Hukuk ve Yetki
+- İlgili ulusal/uluslararası fikri mülkiyet yasaları geçerlidir.
+- Uyuşmazlıklarda Lisans Sahibi’nin ikamet ettiği ülke mahkemeleri yetkilidir.
+
+9) Dayanak
+- Bu lisans, Creative Commons BY-NC 4.0 (Ticari Olmayan) ilkelerini temel alarak Miyotu’ya özel uyarlanmıştır:
+  https://creativecommons.org/licenses/by-nc/4.0/
+
+B) Son Kullanıcı Lisans Sözleşmesi (EULA) ve Kullanım Koşulları
+1) Kullanım Amacı ve Uygunluk
+- Yazılım, yalnızca telif haklarına sahip olduğunuz içerikler ve ilgili platformların (örn. YouTube) hizmet şartlarına uygun şekilde kullanılmalıdır.
+- İndirilen/işlenen içeriklerin hukuki sorumluluğu kullanıcıya aittir.
+
+2) Kurulum ve Otomatik İndirmeler
+- İlk çalıştırmada “yt-dlp” ikilisi indirilebilir/güncellenebilir. İnternet bağlantısı gerekebilir.
+- Güvenlik yazılımları bu işlemleri engelleyebilir; kullanıcı izinleri gerekli olabilir.
+
+3) Veri ve Gizlilik
+- Yazılım, kullanıcı verilerini ticari olarak işlemez. Yerel dosya yolları ve geçici dosyalar yalnızca işlev için kullanılır.
+
+4) Güncellemeler
+- Güncellemeler mevcut lisans hükümlerine tabidir; özellikler değişebilir.
+
+5) Sorumluluk Reddi
+- Performans, uygunluk, belirli bir amaca elverişlilik garantisi verilmez.
+- Doğrudan, dolaylı, arızi, cezai veya sonuçsal zararlardan Lisans Sahibi sorumlu değildir.
+
+6) Sonlandırma
+- Lisans ihlali veya hükümlere aykırı kullanım tespitinde erişim ve kullanım sona erdirilebilir.
+
+C) Üçüncü Taraf Bileşenler ve Lisansları
+Bu yazılım, aşağıdaki üçüncü taraf bileşenleri içerir veya bunlara çağrı yapar. Bu bileşenler kendi lisanslarına tabidir:
+- FFmpeg (ffmpeg-static aracılığıyla)
+  Lisans: GPL/LGPL (dağıtım şekline göre değişebilir)
+  Hukuki bilgi: https://ffmpeg.org/legal.html
+- yt-dlp
+  Lisans: The Unlicense
+  Depo: https://github.com/yt-dlp/yt-dlp
+
+Notlar:
+- Üçüncü taraf bileşenlerin lisansları ve bildirimleri, paketle birlikte sağlanan “THIRD_PARTY_NOTICES.txt” dosyasında özetlenmiştir ve/veya resmi bağlantılardan erişilebilir.
+- Üçüncü taraf lisans yükümlülüklerine uyum Kullanıcı’nın sorumluluğundadır.
+
+D) Nihai Hükümler
+- Bu sözleşmenin herhangi bir hükmünün geçersizliği, kalan hükümlerin geçerliliğini etkilemez.
+- Kurulumu tamamlayarak bu sözleşmeyi okuduğunuzu ve kabul ettiğinizi beyan edersiniz.
+
+© 2025 Miyotu – Tüm Hakları Saklıdır

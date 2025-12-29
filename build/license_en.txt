@@ -1,0 +1,125 @@
+TaxVideoConvert License Agreement (EULA) and Miyotu Software License
+
+Version 1.0 – 2025
+Copyright © 2025 Miyotu – All Rights Reserved
+
+This agreement combines the “Miyotu Software License” (personal/educational usage terms), the End User License Agreement (EULA), warranty/liability disclaimers, and third-party component notices in a single text. By proceeding with the installation, you agree to all provisions.
+
+A) Miyotu Software License (Personal/Educational Use)
+1) Definitions
+
+“Software”: This application, including its source code, compiled outputs, documentation, and all content.
+
+“License Holder”: Miyotu.
+
+“User”: Any individual or organization that views, downloads, installs, or uses the Software.
+
+2) Usage Permissions
+
+Viewing and reviewing the source code.
+
+Copying locally for personal or educational purposes.
+
+Modifying in a local environment for experimental purposes.
+
+3) Prohibited Uses
+
+Using, selling, renting, licensing, or offering the Software or its derivatives for commercial purposes or as a paid service.
+
+Distributing or redistributing without attribution.
+
+Removing or altering copyright/attribution notices or this license text.
+
+Claiming ownership or representing the Software as an original work.
+
+4) Attribution Requirement
+
+The phrase “This software was developed by Miyotu.” must be visibly included.
+
+This license document must be preserved alongside the project.
+
+5) Warranty and Liability Disclaimer
+
+The Software is provided “AS IS” without any express or implied warranties.
+
+The License Holder cannot be held liable for damages arising from its use.
+
+All risks and responsibilities lie with the User.
+
+6) Intellectual Property
+
+All intellectual property and copyrights belong to Miyotu.
+
+This license does not transfer ownership.
+
+7) Termination
+
+Any violation of the terms will automatically terminate the license, and all copies must be destroyed.
+
+8) Governing Law and Jurisdiction
+
+Applicable national/international intellectual property laws shall apply.
+
+Disputes will be subject to the courts in the country of the License Holder’s residence.
+
+9) Basis
+
+This license is adapted from the principles of Creative Commons BY-NC 4.0 (Non-Commercial), tailored specifically for Miyotu:
+https://creativecommons.org/licenses/by-nc/4.0/
+
+B) End User License Agreement (EULA) and Terms of Use
+1) Purpose and Compliance
+
+The Software must only be used with content you own the rights to, and in compliance with the terms of service of the relevant platforms (e.g., YouTube).
+
+Users are legally responsible for downloaded/processed content.
+
+2) Installation and Automatic Downloads
+
+On first run, the “yt-dlp” binary may be downloaded/updated. An internet connection may be required.
+
+Security software may block these operations; user permissions may be necessary.
+
+3) Data and Privacy
+
+The Software does not commercially process user data. Local file paths and temporary files are only used for functionality.
+
+4) Updates
+
+Updates are subject to the existing license terms; features may change.
+
+5) Liability Disclaimer
+
+No guarantees are provided regarding performance, fitness, or suitability for a particular purpose.
+
+The License Holder is not liable for direct, indirect, incidental, punitive, or consequential damages.
+
+6) Termination
+
+Access and usage may be terminated in case of license violations or misuse.
+
+C) Third-Party Components and Licenses
+
+This Software includes or interacts with the following third-party components. These are subject to their own licenses:
+
+FFmpeg (via ffmpeg-static)
+License: GPL/LGPL (depending on distribution method)
+Legal information: https://ffmpeg.org/legal.html
+
+yt-dlp
+License: The Unlicense
+Repository: https://github.com/yt-dlp/yt-dlp
+
+Notes:
+
+Licenses and notices of third-party components are summarized in the accompanying “THIRD_PARTY_NOTICES.txt” file and/or accessible via official links.
+
+Compliance with third-party license obligations is the responsibility of the User.
+
+D) Final Provisions
+
+The invalidity of any provision in this agreement shall not affect the validity of the remaining provisions.
+
+By completing the installation, you acknowledge that you have read and accepted this agreement.
+
+© 2025 Miyotu – All Rights Reserved

@@ -1,0 +1,69 @@
+{
+  "name": "tax-video-convert",
+  "version": "1.0.3",
+  "description": "TaxVideoConvert — YouTube videolarını önizle, kırp ve farklı codec/konteynerlerle dışa aktar.",
+  "main": "main.js",
+  "author": "Miyotu",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "postinstall": "electron-builder install-app-deps",
+    "dist": "electron-builder",
+    "dist-win": "electron-builder --win nsis",
+    "dist-win-portable": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "electron-updater": "^6.1.7",
+    "express": "^4.19.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "ffmpeg-static": "^5.2.0",
+    "mime-types": "^2.1.35",
+    "yt-dlp-exec": "latest"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.miyotu.taxvideoconvert",
+    "productName": "TaxVideoConvert",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/ffmpeg-static/**",
+      "**/yt-dlp-exec/**"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "license": "build/license_tr.txt"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Taxperia",
+      "repo": "TaxVideoConvert"
+    },
+    "extraResources": [
+      { "from": "vendor/yt-dlp/win", "to": "bin/yt-dlp" }
+    ]
+  }
+}

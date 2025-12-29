@@ -1,0 +1,13 @@
+Üçüncü Taraf Bileşen Bildirimleri
+
+Bu paket aşağıdaki üçüncü taraf bileşenleri içerir:
+
+1) FFmpeg (ffmpeg-static ile birlikte gelir)
+   Lisans: GPL veya LGPL (dağıtıma ve yapılandırmaya bağlı)
+   Hukuki bilgiler: https://ffmpeg.org/legal.html
+
+2) yt-dlp
+   Lisans: The Unlicense
+   Depo: https://github.com/yt-dlp/yt-dlp
+
+Yukarıdaki bileşenlerin lisans koşulları ilgili bağlantılarda yer almakta olup, bu yazılımla birlikte kullanımınızda geçerlidir.
