@@ -161,20 +161,20 @@ function applyTranslations() {
   document.getElementById('continueBtn').textContent = t('continueBtn');
   document.getElementById('usageNote').textContent = t('usageNote');
   document.getElementById('settingsTitle').textContent = t('settingsTitle');
-  document.getElementById('generalTabBtn').textContent = t('generalTab');
-  document.getElementById('aboutTabBtn').textContent = t('aboutTab');
-  document.getElementById('languageLabel').textContent = t('language') + ':';
-  document.getElementById('themeLabel').textContent = t('theme') + ':';
-  document.getElementById('defaultPathLabel').textContent = t('defaultPath') + ':';
-  document.getElementById('browsePathBtn').textContent = t('browsePath');
-  document.getElementById('saveSettingsBtn').textContent = t('saveSettings');
-  document.getElementById('themeDarkOpt').textContent = t('themeDark');
-  document.getElementById('themeLightOpt').textContent = t('themeLight');
-  document.getElementById('themeBlueOpt').textContent = t('themeBlue');
-  document.getElementById('themePurpleOpt').textContent = t('themePurple');
+  document.querySelector('#generalTabBtn span').textContent = t('generalTab');
+  document.querySelector('#aboutTabBtn span').textContent = t('aboutTab');
+  document.getElementById('languageLabel').textContent = t('language');
+  document.getElementById('themeLabel').textContent = t('theme');
+  document.getElementById('defaultPathLabel').textContent = t('defaultPath');
+  document.querySelector('#browsePathBtn span').textContent = t('browsePath');
+  document.querySelector('#saveSettingsBtn span').textContent = t('saveSettings');
+  document.getElementById('themeDarkOpt').textContent = '🌙 ' + t('themeDark');
+  document.getElementById('themeLightOpt').textContent = '☀️ ' + t('themeLight');
+  document.getElementById('themeBlueOpt').textContent = '💙 ' + t('themeBlue');
+  document.getElementById('themePurpleOpt').textContent = '💜 ' + t('themePurple');
   document.getElementById('aboutText').textContent = t('aboutText');
-  document.getElementById('versionLabel').textContent = t('version') + ':';
-  document.getElementById('developerLabel').textContent = t('developer') + ':';
+  document.getElementById('versionLabel').textContent = t('version');
+  document.getElementById('developerLabel').textContent = t('developer');
   document.getElementById('settingsBtn').title = t('settings');
   
   // Update system translations
@@ -240,11 +240,21 @@ themeSelect.addEventListener('change', () => {
   applyTheme(themeSelect.value);
 });
 
+const continueBtn = document.getElementById('continueBtn');
+let isLoading = false;
+
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   errorEl.textContent = '';
   const url = input.value.trim();
-  if (!url) return;
+  if (!url || isLoading) return;
+
+  // Yükleme durumunu göster
+  isLoading = true;
+  const originalText = continueBtn.textContent;
+  continueBtn.textContent = t('loading') || 'Yükleniyor...';
+  continueBtn.disabled = true;
+  continueBtn.classList.add('loading');
 
   try {
     const res = await window.api.fetchVideoInfo(url);
@@ -256,5 +266,10 @@ form.addEventListener('submit', async (e) => {
     await window.api.openEditorPage();
   } catch (err) {
     errorEl.textContent = t('error') + (err.message || err);
+  } finally {
+    isLoading = false;
+    continueBtn.textContent = originalText;
+    continueBtn.disabled = false;
+    continueBtn.classList.remove('loading');
   }
 });

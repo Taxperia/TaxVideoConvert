@@ -65,15 +65,15 @@
         </div>
         
         <div class="modal-tabs">
-          <button class="tab-btn active" data-tab="general" id="generalTabBtn">Genel</button>
-          <button class="tab-btn" data-tab="about" id="aboutTabBtn">Hakkında</button>
+          <button class="tab-btn active" data-tab="general" id="generalTabBtn"><span>Genel</span></button>
+          <button class="tab-btn" data-tab="about" id="aboutTabBtn"><span>Hakkında</span></button>
         </div>
         
         <div class="modal-content">
           <!-- Genel Tab -->
           <div class="tab-content active" id="generalTab">
             <div class="setting-row">
-              <label id="languageLabel">Dil:</label>
+              <label id="languageLabel">Dil</label>
               <select id="languageSelect">
                 <option value="tr">Türkçe</option>
                 <option value="en">English</option>
@@ -81,7 +81,7 @@
             </div>
             
             <div class="setting-row">
-              <label id="themeLabel">Tema:</label>
+              <label id="themeLabel">Tema</label>
               <select id="themeSelect">
                 <option value="dark" id="themeDarkOpt">Koyu</option>
                 <option value="light" id="themeLightOpt">Açık</option>
@@ -91,15 +91,15 @@
             </div>
             
             <div class="setting-row">
-              <label id="defaultPathLabel">Varsayılan Kayıt Yolu:</label>
+              <label id="defaultPathLabel">Varsayılan Kayıt Yolu</label>
               <div class="path-input">
-                <input type="text" id="defaultPathInput" readonly />
-                <button id="browsePathBtn">Gözat</button>
+                <input type="text" id="defaultPathInput" readonly placeholder="Klasör seçilmedi..." />
+                <button id="browsePathBtn"><span>Gözat</span></button>
               </div>
             </div>
             
             <div class="setting-actions">
-              <button id="saveSettingsBtn" class="primary">Kaydet</button>
+              <button id="saveSettingsBtn" class="primary"><span>Kaydet</span></button>
             </div>
           </div>
           
@@ -107,34 +107,18 @@
           <div class="tab-content" id="aboutTab">
             <div class="about-content">
               <h3>TaxVideoConvert</h3>
+              <p class="version-text">v<span id="appVersionDisplay">1.0.3</span></p>
               <p id="aboutText">TaxVideoConvert, YouTube, Kick ve diğer video platformlarından video indirip kırpmanıza olanak tanıyan bir masaüstü uygulamasıdır.</p>
+              
               <div class="about-info">
-                <p><strong id="versionLabel">Sürüm:</strong> <span id="appVersionDisplay">0.1.2</span></p>
-                <p><strong id="developerLabel">Geliştirici:</strong> Miyotu</p>
+                <p><span id="versionLabel">Sürüm:</span> 1.0.3</p>
+                <p><span id="developerLabel">Geliştirici:</span> Miyotu</p>
               </div>
-              <div class="update-check-section">
-                <button id="checkUpdateBtn" class="update-check-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="7 10 12 15 17 10"></polyline>
-                    <line x1="12" y1="15" x2="12" y2="3"></line>
-                  </svg>
-                  <span id="checkUpdateText">Güncelleme Kontrol Et</span>
-                </button>
-                <span id="updateStatus" class="update-status"></span>
-              </div>
-              <div class="supported-platforms">
-                <h4>Desteklenen Platformlar:</h4>
-                <ul>
-                  <li>YouTube</li>
-                  <li>Kick</li>
-                  <li>Twitch</li>
-                  <li>Twitter/X</li>
-                  <li>Instagram</li>
-                  <li>TikTok</li>
-                  <li>Ve yt-dlp destekli diğer platformlar...</li>
-                </ul>
-              </div>
+              
+              <button id="checkUpdateBtn" class="update-btn">
+                <span id="checkUpdateText">Güncelleme Kontrol Et</span>
+              </button>
+              <span id="updateStatus" class="update-status"></span>
             </div>
           </div>
         </div>

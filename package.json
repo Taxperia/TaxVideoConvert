@@ -31,12 +31,14 @@
       "main.js",
       "preload.js",
       "renderer/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/**/*"
     ],
     "asar": true,
     "asarUnpack": [
       "**/ffmpeg-static/**",
-      "**/yt-dlp-exec/**"
+      "**/yt-dlp-exec/**",
+      "**/electron-updater/**"
     ],
     "directories": {
       "buildResources": "build"

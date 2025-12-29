@@ -67,25 +67,25 @@ function applyEditorTranslations() {
   document.getElementById('acodecLabel').childNodes[0].textContent = t('audioCodec') + ' ';
   document.getElementById('vcodecCopyOpt').textContent = t('codecCopy');
   document.getElementById('acodecCopyOpt').textContent = t('codecCopy');
-  document.getElementById('chooseOut').textContent = t('chooseOutPath');
-  document.getElementById('exportBtn').textContent = t('exportBtn');
+  document.querySelector('#chooseOut span').textContent = t('chooseOutPath');
+  document.querySelector('#exportBtn span').textContent = t('exportBtn');
   
   // Settings Modal
   document.getElementById('settingsTitle').textContent = t('settingsTitle');
-  document.getElementById('generalTabBtn').textContent = t('generalTab');
-  document.getElementById('aboutTabBtn').textContent = t('aboutTab');
-  document.getElementById('languageLabelModal').textContent = t('language') + ':';
-  document.getElementById('themeLabelModal').textContent = t('theme') + ':';
-  document.getElementById('defaultPathLabelModal').textContent = t('defaultPath') + ':';
-  document.getElementById('browsePathBtn').textContent = t('browsePath');
-  document.getElementById('saveSettingsBtn').textContent = t('saveSettings');
-  document.getElementById('themeDarkOpt').textContent = t('themeDark');
-  document.getElementById('themeLightOpt').textContent = t('themeLight');
-  document.getElementById('themeBlueOpt').textContent = t('themeBlue');
-  document.getElementById('themePurpleOpt').textContent = t('themePurple');
+  document.querySelector('#generalTabBtn span').textContent = t('generalTab');
+  document.querySelector('#aboutTabBtn span').textContent = t('aboutTab');
+  document.getElementById('languageLabelModal').textContent = t('language');
+  document.getElementById('themeLabelModal').textContent = t('theme');
+  document.getElementById('defaultPathLabelModal').textContent = t('defaultPath');
+  document.querySelector('#browsePathBtn span').textContent = t('browsePath');
+  document.querySelector('#saveSettingsBtn span').textContent = t('saveSettings');
+  document.getElementById('themeDarkOpt').textContent = '🌙 ' + t('themeDark');
+  document.getElementById('themeLightOpt').textContent = '☀️ ' + t('themeLight');
+  document.getElementById('themeBlueOpt').textContent = '💙 ' + t('themeBlue');
+  document.getElementById('themePurpleOpt').textContent = '💜 ' + t('themePurple');
   document.getElementById('aboutText').textContent = t('aboutText');
-  document.getElementById('versionLabel').textContent = t('version') + ':';
-  document.getElementById('developerLabel').textContent = t('developer') + ':';
+  document.getElementById('versionLabel').textContent = t('version');
+  document.getElementById('developerLabel').textContent = t('developer');
   document.getElementById('settingsBtn').title = t('settings');
 }
 
@@ -380,14 +380,58 @@ async function init() {
 
   metaEl.innerHTML = `
     ${t('duration')}: ${fmtTime(duration)}<br/>
-    ${t('channel')}: ${videoInfo.uploader || videoInfo.channel || '-'}<br/>
-    ${t('maxPreview')}: ${videoInfo.preview?.height ? videoInfo.preview.height + 'p' : t('notFound')}
+    ${t('channel')}: ${videoInfo.uploader || videoInfo.channel || '-'}
   `;
 
+  const thumbnailFallback = document.getElementById('thumbnailFallback');
+  const thumbnailImg = document.getElementById('thumbnailImg');
+  const thumbnailDuration = document.getElementById('thumbnailDuration');
+  const openInBrowserBtn = document.getElementById('openInBrowserBtn');
+
+  // Tarayıcıda aç butonu
+  openInBrowserBtn.addEventListener('click', () => {
+    if (videoInfo.webpage_url) {
+      window.api.openExternal(videoInfo.webpage_url);
+    }
+  });
+
+  // Thumbnail'i her zaman göster (en güvenilir yöntem)
+  // Video önizleme çoğu platformda sorunlu olduğu için thumbnail tercih ediyoruz
+  function showThumbnail() {
+    player.style.display = 'none';
+    if (videoInfo.thumbnail) {
+      thumbnailImg.src = videoInfo.thumbnail;
+      thumbnailDuration.textContent = fmtTime(duration);
+      thumbnailFallback.style.display = 'block';
+    }
+  }
+
+  // Önce video önizlemeyi dene
   if (videoInfo.preview?.url) {
+    console.log('[Preview] Trying video preview...');
     player.src = videoInfo.preview.url;
+    
+    // 3 saniye içinde yüklenmezse thumbnail'e geç
+    const timeout = setTimeout(() => {
+      if (player.readyState < 2) {
+        console.log('[Preview] Video load timeout, showing thumbnail');
+        showThumbnail();
+      }
+    }, 3000);
+    
+    player.onerror = (e) => {
+      clearTimeout(timeout);
+      console.log('[Preview] Video error, showing thumbnail');
+      showThumbnail();
+    };
+    
+    player.onloadedmetadata = () => {
+      clearTimeout(timeout);
+      console.log('[Preview] Video loaded successfully');
+    };
   } else {
-    metaEl.innerHTML += `<br/>${t('noPreviewWarning')}`;
+    console.log('[Preview] No preview URL, showing thumbnail');
+    showThumbnail();
   }
   
   // Apply translations after init

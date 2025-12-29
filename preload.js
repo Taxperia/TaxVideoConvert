@@ -40,5 +40,6 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('exportProgress', listener);
     return () => ipcRenderer.removeListener('exportProgress', listener);
   },
-  revealInFolder: (filePath) => ipcRenderer.invoke('revealInFolder', filePath)
+  revealInFolder: (filePath) => ipcRenderer.invoke('revealInFolder', filePath),
+  openExternal: (url) => ipcRenderer.invoke('openExternal', url)
 });

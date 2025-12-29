@@ -6,7 +6,6 @@
 // - Renderer ile IPC
 
 const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
-const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const express = require('express');
 const http = require('http');
@@ -15,6 +14,14 @@ const urlLib = require('url');
 const os = require('os');
 const fs = require('fs');
 const crypto = require('crypto');
+
+// electron-updater'ı güvenli şekilde yükle
+let autoUpdater = null;
+try {
+  autoUpdater = require('electron-updater').autoUpdater;
+} catch (err) {
+  console.warn('[Updater] electron-updater yüklenemedi:', err.message);
+}
 
 const ffmpegLib = require('fluent-ffmpeg');
 const ffmpegStatic = require('ffmpeg-static');
@@ -102,30 +109,49 @@ async function startProxy() {
 
     const headers = {};
     if (req.headers['range']) headers['Range'] = req.headers['range'];
-    headers['User-Agent'] = req.headers['user-agent'] || 'Mozilla/5.0 (Electron)';
+    headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
     headers['Referer'] = 'https://www.youtube.com/';
+    headers['Origin'] = 'https://www.youtube.com';
+    headers['Accept'] = '*/*';
+    headers['Accept-Language'] = 'en-US,en;q=0.9';
 
     const parsed = urlLib.parse(target);
     const client = parsed.protocol === 'https:' ? https : http;
 
+    console.log('[Proxy] Fetching:', target.substring(0, 80) + '...');
+
     const proxReq = client.get(target, { headers }, proxRes => {
+      console.log('[Proxy] Response status:', proxRes.statusCode, 'Content-Type:', proxRes.headers['content-type']);
+      
+      // Content-Type'ı düzelt (video için)
+      const contentType = proxRes.headers['content-type'] || 'video/mp4';
+      
       res.writeHead(proxRes.statusCode || 200, {
-        ...proxRes.headers,
+        'Content-Type': contentType,
+        'Content-Length': proxRes.headers['content-length'],
+        'Content-Range': proxRes.headers['content-range'],
+        'Accept-Ranges': proxRes.headers['accept-ranges'] || 'bytes',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, Content-Type'
+        'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, Content-Type',
+        'Cache-Control': 'no-cache'
       });
       proxRes.pipe(res);
     });
 
     proxReq.on('error', (err) => {
-      console.error('Proxy error:', err);
-      if (!res.headersSent) res.status(502).send('Proxy error');
+      console.error('[Proxy] Error:', err.message);
+      if (!res.headersSent) res.status(502).send('Proxy error: ' + err.message);
+    });
+
+    req.on('close', () => {
+      proxReq.destroy();
     });
   });
 
   return new Promise((resolve) => {
     const server = exapp.listen(0, () => {
       const { port } = server.address();
+      console.log('[Proxy] Started on port', port);
       resolve({ server, port });
     });
   });
@@ -160,10 +186,12 @@ function createMainWindow() {
 }
 
 // ----------------------------- Updater Ayarları -----------------------------
-autoUpdater.autoDownload = false;
-autoUpdater.autoInstallOnAppQuit = true;
-
 function setupUpdaterEvents() {
+  if (!autoUpdater) return; // Updater yoksa çık
+  
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+
   autoUpdater.on('checking-for-update', () => {
     if (isDev) console.log('[Updater] Güncelleme kontrol ediliyor...');
   });
@@ -215,6 +243,7 @@ function setupUpdaterEvents() {
 
 // Updater IPC Handlers
 ipcMain.handle('checkForUpdates', async () => {
+  if (!autoUpdater) return { ok: false, error: 'Updater not available' };
   try {
     const result = await autoUpdater.checkForUpdates();
     return { ok: true, data: result };
@@ -224,6 +253,7 @@ ipcMain.handle('checkForUpdates', async () => {
 });
 
 ipcMain.handle('downloadUpdate', async () => {
+  if (!autoUpdater) return { ok: false, error: 'Updater not available' };
   try {
     await autoUpdater.downloadUpdate();
     return { ok: true };
@@ -233,6 +263,7 @@ ipcMain.handle('downloadUpdate', async () => {
 });
 
 ipcMain.handle('installUpdate', () => {
+  if (!autoUpdater) return;
   autoUpdater.quitAndInstall(false, true);
 });
 
@@ -251,7 +282,7 @@ app.whenReady().then(async () => {
   setupUpdaterEvents();
   
   // Uygulama başladıktan 3 saniye sonra güncelleme kontrol et (sadece paketli uygulamada)
-  if (!isDev) {
+  if (!isDev && autoUpdater) {
     setTimeout(() => {
       autoUpdater.checkForUpdates().catch(err => {
         console.error('[Updater] Kontrol hatası:', err);
@@ -287,12 +318,56 @@ ipcMain.handle('fetchVideoInfo', async (event, url) => {
     });
 
     const formats = info.formats || [];
+    
+    // Tarayıcıda oynatılabilir codec ve format kontrolü
+    const isPlayableFormat = (f) => {
+      if (!f.url || !f.vcodec || f.vcodec === 'none') return false;
+      const vc = f.vcodec.toLowerCase();
+      const ext = (f.ext || '').toLowerCase();
+      
+      // Sadece H.264/AVC codec'li MP4 formatları - en uyumlu
+      const isH264 = vc.includes('avc') || vc.includes('h264');
+      const isMp4 = ext === 'mp4' || ext === 'm4v';
+      
+      // VP9 WebM de denenebilir ama H264 MP4 daha güvenilir
+      const isVp9Webm = (vc.includes('vp9') || vc.includes('vp09')) && ext === 'webm';
+      
+      return (isH264 && isMp4) || isVp9Webm;
+    };
+    
+    // Önce progressive formatları dene (hem video hem ses)
     const progressive = formats
-      .filter(f => f.vcodec && f.vcodec !== 'none' && f.acodec && f.acodec !== 'none' && f.url)
-      .sort((a, b) => (b.height || 0) - (a.height || 0));
+      .filter(f => isPlayableFormat(f) && f.acodec && f.acodec !== 'none')
+      .sort((a, b) => {
+        // H264 MP4'ü en üste al, sonra kaliteye göre sırala
+        const aH264 = (a.vcodec?.toLowerCase().includes('avc')) ? 1000 : 0;
+        const bH264 = (b.vcodec?.toLowerCase().includes('avc')) ? 1000 : 0;
+        return (bH264 + (b.height || 0)) - (aH264 + (a.height || 0));
+      });
 
-    const previewFormat = progressive[0] || null;
+    // Progressive yoksa video-only formatları dene
+    const videoOnly = formats
+      .filter(f => isPlayableFormat(f) && f.height && f.height <= 720)
+      .sort((a, b) => {
+        const aH264 = (a.vcodec?.toLowerCase().includes('avc')) ? 1000 : 0;
+        const bH264 = (b.vcodec?.toLowerCase().includes('avc')) ? 1000 : 0;
+        return (bH264 + (b.height || 0)) - (aH264 + (a.height || 0));
+      });
+
+    const previewFormat = progressive[0] || videoOnly[0] || null;
     const previewUrl = previewFormat ? `http://127.0.0.1:${proxyPort}/proxy?url=${encodeURIComponent(previewFormat.url)}` : null;
+    
+    console.log('[Preview] All formats count:', formats.length);
+    console.log('[Preview] Progressive (playable) formats:', progressive.length);
+    console.log('[Preview] Video-only (playable) formats:', videoOnly.length);
+    if (previewFormat) {
+      console.log('[Preview] Selected:', previewFormat.format_id, previewFormat.height + 'p', previewFormat.ext, 'vcodec:', previewFormat.vcodec, 'acodec:', previewFormat.acodec);
+    } else {
+      console.log('[Preview] No suitable format found! Available formats:');
+      formats.slice(0, 10).forEach(f => {
+        console.log(`  - ${f.format_id}: ${f.ext} ${f.height}p vcodec=${f.vcodec} acodec=${f.acodec}`);
+      });
+    }
 
     const slimFormats = formats.map(f => ({
       format_id: f.format_id,
@@ -498,6 +573,16 @@ ipcMain.handle('startExport', async (event, params) => {
 ipcMain.handle('revealInFolder', async (event, filePath) => {
   try {
     await shell.showItemInFolder(filePath);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e) };
+  }
+});
+
+// ----------------------------- IPC: Harici URL Aç -----------------------------
+ipcMain.handle('openExternal', async (event, url) => {
+  try {
+    await shell.openExternal(url);
     return { ok: true };
   } catch (e) {
     return { ok: false, error: String(e) };

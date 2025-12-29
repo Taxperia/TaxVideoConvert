@@ -19,6 +19,23 @@
       <div class="left">
         <div class="video-wrap">
           <video id="player" controls preload="metadata"></video>
+          <div id="thumbnailFallback" class="thumbnail-fallback" style="display: none;">
+            <img id="thumbnailImg" src="" alt="Video Thumbnail" />
+            <div class="thumbnail-overlay">
+              <span id="thumbnailDuration">0:00</span>
+            </div>
+            <div class="thumbnail-actions">
+              <button id="openInBrowserBtn" class="open-browser-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
+                <span id="openInBrowserText">Videoyu Tarayıcıda Aç</span>
+              </button>
+              <p class="thumbnail-hint" id="thumbnailHint">Videoyu izleyip başlangıç/bitiş sürelerini aşağıya girin</p>
+            </div>
+          </div>
         </div>
 
         <div class="timeline">
@@ -104,12 +121,26 @@
             </select>
           </label>
 
-          <div class="output">
-            <button id="chooseOut">Kaydetme Yolunu Seç</button>
-            <div id="outPath"></div>
+          <div id="outPath" class="output-path"></div>
+          
+          <div class="export-buttons">
+            <button id="chooseOut" class="secondary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Kaydetme Yolunu Seç</span>
+            </button>
+            <button id="exportBtn" class="primary">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 16 12 12 8 16"></polyline>
+                <line x1="12" y1="12" x2="12" y2="21"></line>
+                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+              </svg>
+              <span>Dışa Aktar</span>
+            </button>
           </div>
-
-          <button id="exportBtn" class="primary">Dışa Aktar</button>
 
           <div id="progress" class="progress"></div>
           <div id="done" class="done"></div>
@@ -126,15 +157,15 @@
         </div>
         
         <div class="modal-tabs">
-          <button class="tab-btn active" data-tab="general" id="generalTabBtn">Genel</button>
-          <button class="tab-btn" data-tab="about" id="aboutTabBtn">Hakkında</button>
+          <button class="tab-btn active" data-tab="general" id="generalTabBtn"><span>Genel</span></button>
+          <button class="tab-btn" data-tab="about" id="aboutTabBtn"><span>Hakkında</span></button>
         </div>
         
         <div class="modal-content">
           <!-- Genel Tab -->
           <div class="tab-content active" id="generalTab">
             <div class="setting-row">
-              <label id="languageLabelModal">Dil:</label>
+              <label id="languageLabelModal">Dil</label>
               <select id="languageSelect">
                 <option value="tr">Türkçe</option>
                 <option value="en">English</option>
@@ -142,7 +173,7 @@
             </div>
             
             <div class="setting-row">
-              <label id="themeLabelModal">Tema:</label>
+              <label id="themeLabelModal">Tema</label>
               <select id="themeSelect">
                 <option value="dark" id="themeDarkOpt">Koyu</option>
                 <option value="light" id="themeLightOpt">Açık</option>
@@ -152,38 +183,33 @@
             </div>
             
             <div class="setting-row">
-              <label id="defaultPathLabelModal">Varsayılan Kayıt Yolu:</label>
+              <label id="defaultPathLabelModal">Varsayılan Kayıt Yolu</label>
               <div class="path-input">
-                <input type="text" id="defaultPathInput" readonly />
-                <button id="browsePathBtn">Gözat</button>
+                <input type="text" id="defaultPathInput" readonly placeholder="Klasör seçilmedi..." />
+                <button id="browsePathBtn"><span>Gözat</span></button>
               </div>
             </div>
             
             <div class="setting-actions">
-              <button id="saveSettingsBtn" class="primary">Kaydet</button>
+              <button id="saveSettingsBtn" class="primary"><span>Kaydet</span></button>
             </div>
           </div>
           
           <!-- Hakkında Tab -->
           <div class="tab-content" id="aboutTab">
-            <div class="about-content">
+            <div class="about-section">
               <h3>TaxVideoConvert</h3>
+              <p id="appVersionDisplay">Sürüm: 1.0.3</p>
               <p id="aboutText">TaxVideoConvert, YouTube, Kick ve diğer video platformlarından video indirip kırpmanıza olanak tanıyan bir masaüstü uygulamasıdır.</p>
+              
               <div class="about-info">
-                <p><strong id="versionLabel">Sürüm:</strong> 0.1.2</p>
-                <p><strong id="developerLabel">Geliştirici:</strong> Miyotu</p>
+                <p><span id="versionLabel">Sürüm</span>: 1.0.3</p>
+                <p><span id="developerLabel">Geliştirici</span>: Miyotu</p>
               </div>
-              <div class="supported-platforms">
-                <h4>Desteklenen Platformlar:</h4>
-                <ul>
-                  <li>YouTube</li>
-                  <li>Kick</li>
-                  <li>Twitch</li>
-                  <li>Twitter/X</li>
-                  <li>Instagram</li>
-                  <li>TikTok</li>
-                  <li>Ve yt-dlp destekli diğer platformlar...</li>
-                </ul>
+              
+              <div class="platforms">
+                <p><strong>Desteklenen Platformlar:</strong></p>
+                <p>YouTube, Kick, Twitch, Twitter/X, Instagram, TikTok ve 1000+ platform</p>
               </div>
             </div>
           </div>
