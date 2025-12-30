@@ -1,6 +1,6 @@
 {
   "name": "tax-video-convert",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "TaxVideoConvert — YouTube videolarını önizle, kırp ve farklı codec/konteynerlerle dışa aktar.",
   "main": "main.js",
   "author": "Miyotu",

@@ -20,3 +20,6 @@ Thumbs.db
 # Temp files
 *.tmp
 *.temp
+
+# Large binary files
+vendor/ffmpeg/

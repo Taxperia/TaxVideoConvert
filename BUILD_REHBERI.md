@@ -116,7 +116,7 @@ git push
 ### Adım 4: Derle ve Yayınla
 
 ```powershell
-$env:GH_TOKEN = "ghp_SENIN_TOKENIN"
+$env:GH_TOKEN = "YOUR_GITHUB_TOKEN_HERE"
 npm run dist -- --publish always
 ```
 

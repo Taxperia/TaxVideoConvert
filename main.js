@@ -14,6 +14,7 @@ const urlLib = require('url');
 const os = require('os');
 const fs = require('fs');
 const crypto = require('crypto');
+const { spawn } = require('child_process');
 
 // electron-updater'ı güvenli şekilde yükle
 let autoUpdater = null;
@@ -24,7 +25,13 @@ try {
 }
 
 const ffmpegLib = require('fluent-ffmpeg');
-const ffmpegStatic = require('ffmpeg-static');
+// ffmpeg-static yerine vendor/ffmpeg kullanıyoruz (daha stabil)
+let ffmpegStatic = null;
+try {
+  ffmpegStatic = require('ffmpeg-static');
+} catch (e) {
+  // ffmpeg-static yoksa sorun değil, vendor kullanacağız
+}
 const ytDlp = require('yt-dlp-exec');
 
 const isDev = !app.isPackaged;
@@ -34,6 +41,44 @@ function unpackedPath(p) {
   if (!p) return p;
   return p.replace(/app\.asar([/\\]?)/, 'app.asar.unpacked$1');
 }
+
+// Resmi ffmpeg binary'sini çözümle
+function resolveFfmpegBinary() {
+  const isWin = process.platform === 'win32';
+  const exe = isWin ? 'ffmpeg.exe' : 'ffmpeg';
+  const candidates = [];
+
+  // 1) vendor/ffmpeg klasöründen (öncelikli - resmi build)
+  candidates.push(path.join(__dirname, 'vendor', 'ffmpeg', exe));
+  
+  // 2) Paketlenmiş uygulamada resources altından
+  if (process.resourcesPath) {
+    candidates.push(path.join(process.resourcesPath, 'vendor', 'ffmpeg', exe));
+    candidates.push(path.join(process.resourcesPath, 'app.asar.unpacked', 'vendor', 'ffmpeg', exe));
+  }
+
+  // 3) ffmpeg-static modülünden (fallback)
+  if (ffmpegStatic) {
+    candidates.push(unpackedPath(ffmpegStatic));
+  }
+
+  for (const p of candidates) {
+    try { 
+      if (p && fs.existsSync(p)) {
+        console.log('[FFmpeg] Using:', p);
+        return p; 
+      }
+    } catch (_) {}
+  }
+  
+  // PATH'ten ffmpeg kullanılabilir
+  console.log('[FFmpeg] Using system PATH');
+  return 'ffmpeg';
+}
+
+// ffmpeg yolunu ayarla
+const ffmpegPath = resolveFfmpegBinary();
+ffmpegLib.setFfmpegPath(ffmpegPath);
 function tmpFile(ext = '') {
   const name = `tvc_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext ? '.' + ext.replace(/^\./, '') : ''}`;
   return path.join(os.tmpdir(), name);
@@ -48,8 +93,6 @@ function buildYtDlpFormatSelection({ height, videoOnly, audioOnly }) {
   return 'bestvideo+bestaudio/best';
 }
 
-// ffmpeg yolunu asar.unpacked’a çevir ve ayarla
-ffmpegLib.setFfmpegPath(unpackedPath(ffmpegStatic));
 
 // yt-dlp ikilisini çözümle (asar.unpacked / extraResources / dev node_modules / PATH)
 function resolveYtDlpBinary() {
@@ -126,15 +169,24 @@ async function startProxy() {
       // Content-Type'ı düzelt (video için)
       const contentType = proxRes.headers['content-type'] || 'video/mp4';
       
-      res.writeHead(proxRes.statusCode || 200, {
+      // Response header'larını oluştur (undefined olanları filtrele)
+      const responseHeaders = {
         'Content-Type': contentType,
-        'Content-Length': proxRes.headers['content-length'],
-        'Content-Range': proxRes.headers['content-range'],
         'Accept-Ranges': proxRes.headers['accept-ranges'] || 'bytes',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, Content-Type',
         'Cache-Control': 'no-cache'
-      });
+      };
+      
+      // Opsiyonel header'ları sadece varsa ekle
+      if (proxRes.headers['content-length']) {
+        responseHeaders['Content-Length'] = proxRes.headers['content-length'];
+      }
+      if (proxRes.headers['content-range']) {
+        responseHeaders['Content-Range'] = proxRes.headers['content-range'];
+      }
+      
+      res.writeHead(proxRes.statusCode || 200, responseHeaders);
       proxRes.pipe(res);
     });
 
@@ -494,68 +546,141 @@ ipcMain.handle('startExport', async (event, params) => {
     if (needVideo && !videoFile && files.length > 0) videoFile = files[0];
     if (needAudio && !audioFile && files.length > 1) audioFile = files.find(f => f !== videoFile) || files[0];
 
-    // FFmpeg komutu
+    // FFmpeg komutu - doğrudan spawn ile çalıştır (daha stabil)
     await new Promise((resolve, reject) => {
-      const cmd = ffmpegLib();
-
-      if (needVideo && videoFile) cmd.input(videoFile);
-      if (needAudio && audioFile && audioFile !== videoFile) cmd.input(audioFile);
-      if (!needVideo && audioFile && !videoFile) cmd.input(audioFile);
-
+      const args = [];
+      
+      // Input options
+      args.push('-nostdin');
+      args.push('-hide_banner');
+      
+      // Trim - input'tan önce (daha hızlı seek için)
       const hasStart = typeof startSec === 'number' && startSec >= 0;
       const hasEnd = typeof endSec === 'number' && endSec > 0;
-
-      if (hasStart) cmd.setStartTime(startSec);
-      if (hasStart && hasEnd && endSec > startSec) cmd.setDuration(endSec - startSec);
-
+      if (hasStart) {
+        args.push('-ss', String(startSec));
+      }
+      
+      // Inputs
+      if (needVideo && videoFile) {
+        args.push('-i', videoFile);
+      }
+      if (needAudio && audioFile && audioFile !== videoFile) {
+        args.push('-i', audioFile);
+      }
+      if (!needVideo && audioFile && !videoFile) {
+        args.push('-i', audioFile);
+      }
+      
+      // Duration (input'tan sonra)
+      if (hasStart && hasEnd && endSec > startSec) {
+        args.push('-t', String(endSec - startSec));
+      }
+      
+      // Video codec
       if (needVideo) {
-        if (!videoCodec || videoCodec === 'copy') cmd.videoCodec('copy');
-        else cmd.videoCodec(videoCodec);
+        if (!videoCodec || videoCodec === 'copy') {
+          args.push('-c:v', 'copy');
+        } else {
+          args.push('-c:v', videoCodec);
+          // Codec-specific options
+          if (videoCodec.includes('x264') || videoCodec === 'h264' || videoCodec === 'libx264') {
+            args.push('-crf', '18', '-preset', 'veryfast');
+          } else if (videoCodec.includes('x265') || videoCodec === 'hevc' || videoCodec === 'libx265') {
+            args.push('-crf', '24', '-preset', 'medium');
+          } else if (videoCodec === 'libvpx-vp9') {
+            args.push('-b:v', '0', '-crf', '28', '-row-mt', '1');
+          } else if (videoCodec === 'libaom-av1' || videoCodec === 'av1') {
+            args.push('-crf', '28', '-b:v', '0');
+          } else if (videoCodec === 'prores_ks') {
+            args.push('-profile:v', '3');
+          }
+        }
       } else {
-        cmd.noVideo();
+        args.push('-vn');
       }
-
+      
+      // Audio codec
       if (needAudio) {
-        if (!audioCodec || audioCodec === 'copy') cmd.audioCodec('copy');
-        else cmd.audioCodec(audioCodec);
+        if (!audioCodec || audioCodec === 'copy') {
+          args.push('-c:a', 'copy');
+        } else {
+          args.push('-c:a', audioCodec);
+          if (audioCodec === 'aac') args.push('-b:a', '192k');
+          if (audioCodec === 'libopus') args.push('-b:a', '160k');
+          if (audioCodec === 'libmp3lame') args.push('-b:a', '192k');
+        }
       } else {
-        cmd.noAudio();
+        args.push('-an');
       }
-
-      const ext = path.extname(outPath).slice(1).toLowerCase();
-      if (ext) cmd.format(ext);
-      else if (container) cmd.format(container);
-
-      // Yeniden kodlamalarda varsayılanlar
-      if (videoCodec && videoCodec !== 'copy') {
-        if (videoCodec.includes('x264') || videoCodec === 'h264') cmd.outputOptions(['-crf 18', '-preset veryfast']);
-        if (videoCodec.includes('x265') || videoCodec === 'hevc') cmd.outputOptions(['-crf 24', '-preset medium']);
-        if (videoCodec === 'libvpx-vp9') cmd.outputOptions(['-b:v 0', '-crf 28']);
-        if (videoCodec === 'libaom-av1' || videoCodec === 'av1') cmd.outputOptions(['-crf 28', '-b:v 0']);
-        if (videoCodec === 'prores_ks') cmd.outputOptions(['-profile:v 3']);
-      }
-      if (audioCodec && audioCodec !== 'copy') {
-        if (audioCodec === 'aac') cmd.audioBitrate('192k');
-        if (audioCodec === 'libopus') cmd.audioBitrate('160k');
-        if (audioCodec === 'libmp3lame') cmd.audioBitrate('192k');
-      }
-
+      
+      // Stabilite ayarları
+      args.push('-max_muxing_queue_size', '16384');
+      args.push('-threads', '4');  // Sabit thread sayısı
+      
+      // Output
+      args.push('-y');  // Overwrite
+      args.push('-progress', 'pipe:1');  // Progress to stdout
+      args.push(outPath);
+      
+      console.log('[FFmpeg] Command:', ffmpegPath, args.join(' '));
+      
+      const ffmpegProcess = spawn(ffmpegPath, args, {
+        stdio: ['ignore', 'pipe', 'pipe'],  // stdin kapalı
+        windowsHide: true,
+        detached: false
+      });
+      
+      let lastProgress = {};
       const bw = BrowserWindow.fromWebContents(event.sender);
-      cmd.on('progress', p => {
-        bw.webContents.send('exportProgress', {
-          frames: p.frames,
-          currentKbps: p.currentKbps,
-          targetSize: p.targetSize,
-          timemark: p.timemark
-        });
+      
+      // Progress parsing
+      ffmpegProcess.stdout.on('data', (data) => {
+        const lines = data.toString().split('\n');
+        for (const line of lines) {
+          if (line.startsWith('frame=')) lastProgress.frames = parseInt(line.split('=')[1]);
+          if (line.startsWith('fps=')) lastProgress.fps = parseFloat(line.split('=')[1]);
+          if (line.startsWith('out_time=')) lastProgress.timemark = line.split('=')[1].trim();
+          if (line.startsWith('total_size=')) lastProgress.targetSize = parseInt(line.split('=')[1]);
+          if (line.startsWith('speed=')) {
+            // Her speed satırında progress gönder
+            if (bw && !bw.isDestroyed()) {
+              bw.webContents.send('exportProgress', {
+                frames: lastProgress.frames,
+                fps: lastProgress.fps,
+                targetSize: lastProgress.targetSize,
+                timemark: lastProgress.timemark
+              });
+            }
+          }
+        }
       });
-      cmd.on('error', (err, stdout, stderr) => {
-        console.error('ffmpeg error', err, stderr);
-        reject(err);
+      
+      let stderrOutput = '';
+      ffmpegProcess.stderr.on('data', (data) => {
+        stderrOutput += data.toString();
+        // Console'a son satırı yazdır (progress için)
+        const lastLine = data.toString().trim().split('\n').pop();
+        if (lastLine && lastLine.includes('frame=')) {
+          process.stdout.write('\r' + lastLine);
+        }
       });
-      cmd.on('end', () => resolve());
-
-      cmd.save(outPath);
+      
+      ffmpegProcess.on('error', (err) => {
+        console.error('[FFmpeg] Process error:', err);
+        reject(new Error(`FFmpeg process error: ${err.message}`));
+      });
+      
+      ffmpegProcess.on('close', (code) => {
+        console.log('\n[FFmpeg] Process exited with code:', code);
+        if (code === 0) {
+          resolve();
+        } else {
+          // Hata durumunda son 500 karakteri göster
+          const errorTail = stderrOutput.slice(-500);
+          reject(new Error(`ffmpeg exited with code ${code}: ${errorTail}`));
+        }
+      });
     });
 
     return { ok: true, outPath };
