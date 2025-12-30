@@ -23,6 +23,7 @@ const translations = {
     browsePath: 'Gözat',
     saveSettings: 'Kaydet',
     closeSettings: 'Kapat',
+    appearanceTab: 'Tema',
     
     // Themes
     themeDark: 'Koyu',
@@ -115,6 +116,7 @@ const translations = {
     browsePath: 'Browse',
     saveSettings: 'Save',
     closeSettings: 'Close',
+    appearanceTab: 'Themes',
     
     // Themes
     themeDark: 'Dark',

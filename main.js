@@ -219,6 +219,7 @@ function createMainWindow() {
     width: 1100,
     height: 740,
     autoHideMenuBar: true,
+    icon: path.join(__dirname, 'build', 'icon.ico'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -316,7 +317,8 @@ ipcMain.handle('downloadUpdate', async () => {
 
 ipcMain.handle('installUpdate', () => {
   if (!autoUpdater) return;
-  autoUpdater.quitAndInstall(false, true);
+  // Silent install - arka planda kurulum yapar, kurulum ekranı göstermez
+  autoUpdater.quitAndInstall(true, true);
 });
 
 ipcMain.handle('getAppVersion', () => {

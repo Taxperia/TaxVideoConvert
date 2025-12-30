@@ -30,13 +30,14 @@ const playInOutBtn = document.getElementById('playInOut');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsModal = document.getElementById('settingsModal');
 const closeModalBtn = document.getElementById('closeModal');
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
+const settingsNavItems = document.querySelectorAll('.settings-nav-item');
+const settingsSections = document.querySelectorAll('.settings-section');
 const languageSelect = document.getElementById('languageSelect');
 const themeSelect = document.getElementById('themeSelect');
 const defaultPathInput = document.getElementById('defaultPathInput');
 const browsePathBtn = document.getElementById('browsePathBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const themePreviewBoxes = document.querySelectorAll('.theme-preview-box');
 
 let duration = 0;
 let startSec = 0;
@@ -70,22 +71,26 @@ function applyEditorTranslations() {
   document.querySelector('#chooseOut span').textContent = t('chooseOutPath');
   document.querySelector('#exportBtn span').textContent = t('exportBtn');
   
-  // Settings Modal
-  document.getElementById('settingsTitle').textContent = t('settingsTitle');
-  document.querySelector('#generalTabBtn span').textContent = t('generalTab');
-  document.querySelector('#aboutTabBtn span').textContent = t('aboutTab');
-  document.getElementById('languageLabelModal').textContent = t('language');
-  document.getElementById('themeLabelModal').textContent = t('theme');
-  document.getElementById('defaultPathLabelModal').textContent = t('defaultPath');
-  document.querySelector('#browsePathBtn span').textContent = t('browsePath');
-  document.querySelector('#saveSettingsBtn span').textContent = t('saveSettings');
-  document.getElementById('themeDarkOpt').textContent = '🌙 ' + t('themeDark');
-  document.getElementById('themeLightOpt').textContent = '☀️ ' + t('themeLight');
-  document.getElementById('themeBlueOpt').textContent = '💙 ' + t('themeBlue');
-  document.getElementById('themePurpleOpt').textContent = '💜 ' + t('themePurple');
+  // Settings Modal - new panel
+  const generalTabBtn = document.getElementById('generalTabBtn');
+  const appearanceTabBtn = document.getElementById('appearanceTabBtn');
+  const aboutTabBtn = document.getElementById('aboutTabBtn');
+  const languageLabel = document.getElementById('languageLabel');
+  const themeLabel = document.getElementById('themeLabel');
+  const defaultPathLabel = document.getElementById('defaultPathLabel');
+  
+  if (generalTabBtn) generalTabBtn.textContent = t('generalTab');
+  if (appearanceTabBtn) appearanceTabBtn.textContent = t('appearanceTab') || 'Görünüm';
+  if (aboutTabBtn) aboutTabBtn.textContent = t('aboutTab');
+  if (languageLabel) languageLabel.textContent = t('language');
+  if (themeLabel) themeLabel.textContent = t('theme');
+  if (defaultPathLabel) defaultPathLabel.textContent = t('defaultPath');
+  
+  document.getElementById('themeDarkOpt').textContent = t('themeDark');
+  document.getElementById('themeLightOpt').textContent = t('themeLight');
+  document.getElementById('themeBlueOpt').textContent = t('themeBlue');
+  document.getElementById('themePurpleOpt').textContent = t('themePurple');
   document.getElementById('aboutText').textContent = t('aboutText');
-  document.getElementById('versionLabel').textContent = t('version');
-  document.getElementById('developerLabel').textContent = t('developer');
   document.getElementById('settingsBtn').title = t('settings');
 }
 
@@ -116,18 +121,32 @@ settingsModal.addEventListener('click', (e) => {
   }
 });
 
-// Tab switching
-tabBtns.forEach(btn => {
+// Tab switching - New settings panel
+settingsNavItems.forEach(btn => {
   btn.addEventListener('click', () => {
     const tabName = btn.dataset.tab;
     
-    tabBtns.forEach(b => b.classList.remove('active'));
-    tabContents.forEach(c => c.classList.remove('active'));
+    settingsNavItems.forEach(b => b.classList.remove('active'));
+    settingsSections.forEach(c => c.classList.remove('active'));
     
     btn.classList.add('active');
-    document.getElementById(tabName + 'Tab').classList.add('active');
+    const targetSection = document.getElementById(tabName + 'Tab');
+    if (targetSection) {
+      targetSection.classList.add('active');
+    }
   });
 });
+
+// Theme preview click
+if (themePreviewBoxes) {
+  themePreviewBoxes.forEach(box => {
+    box.addEventListener('click', () => {
+      const theme = box.dataset.theme;
+      themeSelect.value = theme;
+      applyTheme(theme);
+    });
+  });
+}
 
 // Browse path
 browsePathBtn.addEventListener('click', async () => {
