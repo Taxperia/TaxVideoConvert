@@ -219,12 +219,59 @@ async function startProxy() {
     headers['Accept'] = '*/*';
     headers['Accept-Language'] = 'en-US,en;q=0.9';
 
-    const parsed = urlLib.parse(target);
-    const client = parsed.protocol === 'https:' ? https : http;
+    // Re-parse and validate URL to prevent SSRF
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(target);
+    } catch (e) {
+      console.warn('[Proxy] Invalid URL:', target, e.message);
+      return res.status(400).send('Invalid url');
+    }
 
-    console.log('[Proxy] Fetching:', target.substring(0, 80) + '...');
+    // Allow only http/https schemes
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      console.warn('[Proxy] Blocked non-http(s) URL:', parsedUrl.href);
+      return res.status(403).send('Forbidden: Only http and https are allowed.');
+    }
 
-    const proxReq = client.get(target, { headers }, proxRes => {
+    const hostname = parsedUrl.hostname || '';
+
+    // Basic private/loopback hostname checks
+    const lowerHost = hostname.toLowerCase();
+    const isLocalHostname =
+      lowerHost === 'localhost' ||
+      lowerHost === '127.0.0.1' ||
+      lowerHost === '::1' ||
+      lowerHost.endsWith('.local') ||
+      lowerHost.endsWith('.localhost') ||
+      lowerHost.endsWith('.lan');
+
+    // Basic private IP checks (IPv4)
+    const isPrivateIPv4 =
+      /^10\./.test(hostname) ||
+      /^192\.168\./.test(hostname) ||
+      /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||
+      /^127\./.test(hostname) ||
+      /^169\.254\./.test(hostname) ||
+      /^0\.0\.0\.0$/.test(hostname);
+
+    // Basic IPv6 local/unique-local checks
+    const isPrivateIPv6 =
+      /^::1$/.test(hostname) ||
+      /^fc[0-9a-f]/i.test(hostname) || // unique local
+      /^fd[0-9a-f]/i.test(hostname) || // unique local
+      /^fe80:/i.test(hostname);       // link-local
+
+    if (isLocalHostname || isPrivateIPv4 || isPrivateIPv6) {
+      console.warn('[Proxy] Blocked private/internal URL:', parsedUrl.href);
+      return res.status(403).send('Forbidden: Access to private/internal resources is denied.');
+    }
+
+    const client = parsedUrl.protocol === 'https:' ? https : http;
+
+    console.log('[Proxy] Fetching:', parsedUrl.href.substring(0, 80) + '...');
+
+    const proxReq = client.get(parsedUrl.href, { headers }, proxRes => {
       console.log('[Proxy] Response status:', proxRes.statusCode, 'Content-Type:', proxRes.headers['content-type']);
       
       // Content-Type'ı düzelt (video için)
