@@ -11,10 +11,12 @@ const express = require('express');
 const http = require('http');
 const https = require('https');
 const urlLib = require('url');
+const dns = require('dns');
 const os = require('os');
 const fs = require('fs');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
+const packageJson = require(path.join(__dirname, "package.json"));
 
 // electron-updater'ı güvenli şekilde yükle
 let autoUpdater = null;
@@ -41,6 +43,7 @@ function unpackedPath(p) {
   if (!p) return p;
   return p.replace(/app\.asar([/\\]?)/, 'app.asar.unpacked$1');
 }
+
 
 // Resmi ffmpeg binary'sini çözümle
 function resolveFfmpegBinary() {
@@ -143,12 +146,70 @@ if (isDev) {
 }
 
 // ----------------------------- Proxy (CORS + Range) -----------------------------
+async function isUrlSafe(targetUrl) {
+  try {
+    const parsed = urlLib.parse(targetUrl);
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    
+    const hostname = parsed.hostname;
+    if (!hostname) return false;
+    
+    // Check known loopback/private patterns on hostname (before DNS)
+    if (hostname.toLowerCase() === 'localhost') return false;
+    if (hostname === '::1' || hostname === '[::1]') return false;
+    if (hostname.startsWith('127.')) return false;
+    if (hostname.startsWith('10.')) return false;
+    if (hostname.startsWith('192.168.')) return false;
+    if (hostname.startsWith('169.254.')) return false;
+    // 172.16.x.x - 172.31.x.x
+    const parts = hostname.split('.');
+    if (parts.length === 4 && parts[0] === '172') {
+        const second = parseInt(parts[1], 10);
+        if (second >= 16 && second <= 31) return false;
+    }
+    
+    // Resolve Hostname to IP to catch domains pointing to private IPs
+    return new Promise((resolve) => {
+        dns.lookup(hostname, { family: 4 }, (err, address) => {
+            if (err) {
+                // Determine if we should fail open or closed. Failing closed (reject) is safer.
+                return resolve(false);
+            }
+            if (!address) return resolve(false);
+            
+            // Re-check resolved IP
+            if (address.startsWith('127.')) return resolve(false);
+            if (address.startsWith('10.')) return resolve(false);
+            if (address.startsWith('192.168.')) return resolve(false);
+            if (address.startsWith('169.254.')) return resolve(false);
+            
+            const ipParts = address.split('.');
+            if (ipParts.length === 4 && ipParts[0] === '172') {
+                const second = parseInt(ipParts[1], 10);
+                if (second >= 16 && second <= 31) return resolve(false);
+            }
+            
+            resolve(true);
+        });
+    });
+  } catch (e) {
+      return false;
+  }
+}
+
 async function startProxy() {
   const exapp = express();
 
-  exapp.get('/proxy', (req, res) => {
+  exapp.get('/proxy', async (req, res) => {
     const target = req.query.url;
     if (!target) return res.status(400).send('Missing url');
+
+    // SSRF Protection
+    const safe = await isUrlSafe(target);
+    if (!safe) {
+        console.warn('[Proxy] Blocked unsafe URL:', target);
+        return res.status(403).send('Forbidden: Access to private resources or invalid URL is denied.');
+    }
 
     const headers = {};
     if (req.headers['range']) headers['Range'] = req.headers['range'];

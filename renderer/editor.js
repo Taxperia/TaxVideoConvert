@@ -1,6 +1,14 @@
 // Initialize theme
 initTheme();
 
+// Get App Version
+window.api.getAppVersion().then(ver => {
+  const vEl = document.getElementById('versionLabel');
+  const appVerEl = document.getElementById('appVersionDisplay');
+  if (vEl) vEl.textContent = ver;
+  if (appVerEl) appVerEl.textContent = ver;
+});
+
 let videoInfo = null;
 const player = document.getElementById('player');
 const titleEl = document.getElementById('title');
@@ -459,5 +467,6 @@ async function init() {
   // Apply translations after init
   applyEditorTranslations();
 }
+
 
 init();

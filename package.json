@@ -15,9 +15,11 @@
   "dependencies": {
     "electron-updater": "^6.1.7",
     "express": "^4.19.2",
-    "fluent-ffmpeg": "^2.1.2",
     "ffmpeg-static": "^5.2.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "js-yaml": "^4.1.0",
     "mime-types": "^2.1.35",
+    "tar": "^7.5.9",
     "yt-dlp-exec": "latest"
   },
   "devDependencies": {
@@ -45,7 +47,12 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "icon": "build/icon.ico",
       "artifactName": "${productName}-Setup-${version}.${ext}"
@@ -65,7 +72,10 @@
       "repo": "TaxVideoConvert"
     },
     "extraResources": [
-      { "from": "vendor/yt-dlp/win", "to": "bin/yt-dlp" }
+      {
+        "from": "vendor/yt-dlp/win",
+        "to": "bin/yt-dlp"
+      }
     ]
   }
 }
