@@ -23,7 +23,7 @@
     "yt-dlp-exec": "latest"
   },
   "devDependencies": {
-    "electron": "^31.3.0",
+    "electron": "^35.7.5",
     "electron-builder": "^24.13.3"
   },
   "build": {
