@@ -78,6 +78,22 @@ const translations = {
     developer: 'Geliştirici',
     developerName: 'Miyotu',
     
+    // Cookies (Çerez Ayarları)
+    cookiesLabel: 'Tarayıcı Çerezleri',
+    cookiesDesc: 'Giriş gerektiren siteler için (Udemy, vb.)',
+    cookiesNone: 'Kullanma',
+    cookiesChrome: 'Chrome',
+    cookiesFirefox: 'Firefox',
+    cookiesEdge: 'Edge',
+    cookiesBrave: 'Brave',
+    cookiesOpera: 'Opera',
+    cookiesFile: 'cookies.txt Dosyası',
+    cookiesFilePath: 'Cookies Dosya Yolu',
+    cookiesFileSelect: 'cookies.txt Seç',
+    cookiesFileHint: 'Netscape formatında cookies.txt dosyası',
+    cookiesError: 'Çerez hatası: Tarayıcıyı kapatıp tekrar deneyin veya cookies.txt dosyası kullanın.',
+    cookiesBrowserClosed: 'Tarayıcı kapalı olmalı',
+    
     // Updater
     updateAvailable: 'Güncelleme Mevcut',
     updateAvailableMsg: 'Yeni bir sürüm mevcut',
@@ -170,6 +186,22 @@ const translations = {
     version: 'Version',
     developer: 'Developer',
     developerName: 'Miyotu',
+    
+    // Cookies Settings
+    cookiesLabel: 'Browser Cookies',
+    cookiesDesc: 'For sites requiring login (Udemy, etc.)',
+    cookiesNone: 'None',
+    cookiesChrome: 'Chrome',
+    cookiesFirefox: 'Firefox',
+    cookiesEdge: 'Edge',
+    cookiesBrave: 'Brave',
+    cookiesOpera: 'Opera',
+    cookiesFile: 'cookies.txt File',
+    cookiesFilePath: 'Cookies File Path',
+    cookiesFileSelect: 'Select cookies.txt',
+    cookiesFileHint: 'Netscape format cookies.txt file',
+    cookiesError: 'Cookie error: Close the browser and try again, or use a cookies.txt file.',
+    cookiesBrowserClosed: 'Browser must be closed',
     
     // Updater
     updateAvailable: 'Update Available',

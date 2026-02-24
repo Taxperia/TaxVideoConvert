@@ -143,15 +143,39 @@ const browsePathBtn = document.getElementById('browsePathBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 const themePreviewBoxes = document.querySelectorAll('.theme-preview-box');
 
+// Cookies settings elements
+const cookiesFromSelect = document.getElementById('cookiesFromSelect');
+const cookiesFilePathItem = document.getElementById('cookiesFilePathItem');
+const cookiesFilePathInput = document.getElementById('cookiesFilePathInput');
+const browseCookiesBtn = document.getElementById('browseCookiesBtn');
+
 // Load settings
 function loadCurrentSettings() {
   const lang = localStorage.getItem('tvc_language') || 'tr';
   const theme = localStorage.getItem('tvc_theme') || 'dark';
   const defaultPath = localStorage.getItem('tvc_defaultPath') || '';
+  const cookiesFrom = localStorage.getItem('tvc_cookiesFrom') || 'none';
+  const cookiesFilePath = localStorage.getItem('tvc_cookiesFilePath') || '';
   
   languageSelect.value = lang;
   themeSelect.value = theme;
   defaultPathInput.value = defaultPath;
+  
+  // Cookies settings
+  if (cookiesFromSelect) {
+    cookiesFromSelect.value = cookiesFrom;
+    toggleCookiesFilePath(cookiesFrom);
+  }
+  if (cookiesFilePathInput) {
+    cookiesFilePathInput.value = cookiesFilePath;
+  }
+}
+
+// Toggle cookies file path visibility
+function toggleCookiesFilePath(value) {
+  if (cookiesFilePathItem) {
+    cookiesFilePathItem.style.display = value === 'file' ? 'flex' : 'none';
+  }
 }
 
 // Apply translations
@@ -185,6 +209,31 @@ function applyTranslations() {
   document.getElementById('themePurpleOpt').textContent = t('themePurple');
   document.getElementById('aboutText').textContent = t('aboutText');
   document.getElementById('settingsBtn').title = t('settings');
+  
+  // Cookies translations
+  const cookiesLabel = document.getElementById('cookiesLabel');
+  const cookiesDesc = document.getElementById('cookiesDesc');
+  const cookiesNoneOpt = document.getElementById('cookiesNoneOpt');
+  const cookiesChromeOpt = document.getElementById('cookiesChromeOpt');
+  const cookiesFirefoxOpt = document.getElementById('cookiesFirefoxOpt');
+  const cookiesEdgeOpt = document.getElementById('cookiesEdgeOpt');
+  const cookiesBraveOpt = document.getElementById('cookiesBraveOpt');
+  const cookiesOperaOpt = document.getElementById('cookiesOperaOpt');
+  const cookiesFileOpt = document.getElementById('cookiesFileOpt');
+  const cookiesFilePathLabel = document.getElementById('cookiesFilePathLabel');
+  const cookiesFileHint = document.getElementById('cookiesFileHint');
+  
+  if (cookiesLabel) cookiesLabel.textContent = t('cookiesLabel');
+  if (cookiesDesc) cookiesDesc.textContent = t('cookiesDesc');
+  if (cookiesNoneOpt) cookiesNoneOpt.textContent = t('cookiesNone');
+  if (cookiesChromeOpt) cookiesChromeOpt.textContent = t('cookiesChrome');
+  if (cookiesFirefoxOpt) cookiesFirefoxOpt.textContent = t('cookiesFirefox');
+  if (cookiesEdgeOpt) cookiesEdgeOpt.textContent = t('cookiesEdge');
+  if (cookiesBraveOpt) cookiesBraveOpt.textContent = t('cookiesBrave');
+  if (cookiesOperaOpt) cookiesOperaOpt.textContent = t('cookiesOpera');
+  if (cookiesFileOpt) cookiesFileOpt.textContent = t('cookiesFile');
+  if (cookiesFilePathLabel) cookiesFilePathLabel.textContent = t('cookiesFilePath');
+  if (cookiesFileHint) cookiesFileHint.textContent = t('cookiesFileHint');
   
   // Update system translations
   const checkUpdateText = document.getElementById('checkUpdateText');
@@ -240,15 +289,36 @@ browsePathBtn.addEventListener('click', async () => {
   }
 });
 
+// Browse cookies file
+if (browseCookiesBtn) {
+  browseCookiesBtn.addEventListener('click', async () => {
+    const result = await window.api.chooseCookiesFile();
+    if (result.ok && result.path) {
+      cookiesFilePathInput.value = result.path;
+    }
+  });
+}
+
+// Cookies from select change
+if (cookiesFromSelect) {
+  cookiesFromSelect.addEventListener('change', () => {
+    toggleCookiesFilePath(cookiesFromSelect.value);
+  });
+}
+
 // Save settings
 saveSettingsBtn.addEventListener('click', () => {
   const lang = languageSelect.value;
   const theme = themeSelect.value;
   const defaultPath = defaultPathInput.value;
+  const cookiesFrom = cookiesFromSelect ? cookiesFromSelect.value : 'none';
+  const cookiesFilePath = cookiesFilePathInput ? cookiesFilePathInput.value : '';
   
   localStorage.setItem('tvc_language', lang);
   localStorage.setItem('tvc_theme', theme);
   localStorage.setItem('tvc_defaultPath', defaultPath);
+  localStorage.setItem('tvc_cookiesFrom', cookiesFrom);
+  localStorage.setItem('tvc_cookiesFilePath', cookiesFilePath);
   
   applyTheme(theme);
   applyTranslations();
@@ -278,9 +348,20 @@ form.addEventListener('submit', async (e) => {
   continueBtn.classList.add('loading');
 
   try {
-    const res = await window.api.fetchVideoInfo(url);
+    // Cookies ayarlarını al
+    const cookiesOptions = {
+      cookiesFrom: localStorage.getItem('tvc_cookiesFrom') || 'none',
+      cookiesFilePath: localStorage.getItem('tvc_cookiesFilePath') || ''
+    };
+    
+    const res = await window.api.fetchVideoInfo(url, cookiesOptions);
     if (!res.ok) {
-      errorEl.textContent = t('fetchError') + (res.error || t('unknownError'));
+      let errorMsg = res.error || t('unknownError');
+      // Çerez hatası kontrolü
+      if (errorMsg.includes('Could not copy') && errorMsg.includes('cookie database')) {
+        errorMsg = t('cookiesError');
+      }
+      errorEl.textContent = t('fetchError') + errorMsg;
       return;
     }
     // Editor sayfasını aç

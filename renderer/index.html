@@ -108,6 +108,37 @@
                 </button>
               </div>
             </div>
+            
+            <!-- Çerez Ayarları -->
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-label" id="cookiesLabel">Tarayıcı Çerezleri</span>
+                <span class="setting-desc" id="cookiesDesc">Giriş gerektiren siteler için (Udemy, vb.)</span>
+              </div>
+              <select id="cookiesFromSelect" class="setting-select">
+                <option value="none" id="cookiesNoneOpt">Kullanma</option>
+                <option value="chrome" id="cookiesChromeOpt">Chrome</option>
+                <option value="firefox" id="cookiesFirefoxOpt">Firefox</option>
+                <option value="edge" id="cookiesEdgeOpt">Edge</option>
+                <option value="brave" id="cookiesBraveOpt">Brave</option>
+                <option value="opera" id="cookiesOperaOpt">Opera</option>
+                <option value="file" id="cookiesFileOpt">cookies.txt Dosyası</option>
+              </select>
+            </div>
+            
+            <!-- Cookies Dosya Yolu (sadece file seçiliyse görünür) -->
+            <div class="setting-item" id="cookiesFilePathItem" style="display: none;">
+              <div class="setting-info">
+                <span class="setting-label" id="cookiesFilePathLabel">Cookies Dosya Yolu</span>
+                <span class="setting-desc" id="cookiesFileHint">Netscape formatında cookies.txt dosyası</span>
+              </div>
+              <div class="setting-path-group">
+                <input type="text" id="cookiesFilePathInput" readonly placeholder="cookies.txt seç..." class="setting-path-input" />
+                <button id="browseCookiesBtn" class="setting-path-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </button>
+              </div>
+            </div>
           </div>
           
           <!-- Tema Tab -->
@@ -172,7 +203,7 @@
             <div class="about-hero">
               <div class="about-logo-icon">🎬</div>
               <h2 class="about-app-name">TaxVideoConvert</h2>
-              <span class="about-version-badge">v<span id="appVersionDisplay">1.0.5</span></span>
+              <span class="about-version-badge">v<span id="appVersionDisplay">1.0.6</span></span>
             </div>
             
             <p class="about-description" id="aboutText">YouTube, Kick ve diğer platformlardan video indirip düzenlemenizi sağlayan güçlü bir masaüstü uygulaması.</p>
@@ -183,7 +214,7 @@
                 <span class="stat-label">Platform</span>
               </div>
               <div class="about-stat">
-                <span class="stat-value" id="versionLabel">1.0.5</span>
+                <span class="stat-value" id="versionLabel">1.0.6</span>
                 <span class="stat-label">Sürüm</span>
               </div>
               <div class="about-stat">

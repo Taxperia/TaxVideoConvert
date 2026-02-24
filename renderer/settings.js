@@ -4,7 +4,9 @@ const SETTINGS_KEY = 'tvc_settings';
 const defaultSettings = {
   language: 'tr',
   theme: 'dark',
-  defaultPath: ''
+  defaultPath: '',
+  cookiesFrom: 'none',  // 'none', 'chrome', 'firefox', 'edge', 'brave', 'opera', 'file'
+  cookiesFilePath: ''   // cookies.txt dosya yolu (cookiesFrom='file' ise)
 };
 
 function loadSettings() {
@@ -26,6 +28,8 @@ function saveSettings(settings) {
     localStorage.setItem('tvc_language', settings.language);
     localStorage.setItem('tvc_theme', settings.theme);
     localStorage.setItem('tvc_defaultPath', settings.defaultPath);
+    localStorage.setItem('tvc_cookiesFrom', settings.cookiesFrom || 'none');
+    localStorage.setItem('tvc_cookiesFilePath', settings.cookiesFilePath || '');
   } catch (e) {
     console.error('Settings save error:', e);
   }

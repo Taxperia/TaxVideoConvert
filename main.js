@@ -361,15 +361,31 @@ app.on('quit', () => {
 const windowState = new Map(); // Map<webContentsId, { lastVideoInfo, lastVideoUrl }>
 
 // ----------------------------- IPC: Video Bilgisi -----------------------------
-ipcMain.handle('fetchVideoInfo', async (event, url) => {
+ipcMain.handle('fetchVideoInfo', async (event, url, cookiesOptions) => {
   const wcId = event.sender.id;
   try {
-    const info = await ytdlpExec(url, {
+    // yt-dlp seçenekleri
+    const ytdlpOptions = {
       dumpSingleJson: true,
       noCheckCertificates: true,
       noWarnings: true,
       preferFreeFormats: false
-    });
+    };
+    
+    // Cookies desteği
+    if (cookiesOptions) {
+      if (cookiesOptions.cookiesFrom && cookiesOptions.cookiesFrom !== 'none') {
+        if (cookiesOptions.cookiesFrom === 'file' && cookiesOptions.cookiesFilePath) {
+          // cookies.txt dosyasından çerezleri kullan
+          ytdlpOptions.cookies = cookiesOptions.cookiesFilePath;
+        } else {
+          // Tarayıcıdan çerezleri al (chrome, firefox, edge, brave, opera)
+          ytdlpOptions.cookiesFromBrowser = cookiesOptions.cookiesFrom;
+        }
+      }
+    }
+    
+    const info = await ytdlpExec(url, ytdlpOptions);
 
     const formats = info.formats || [];
     
@@ -507,7 +523,9 @@ ipcMain.handle('startExport', async (event, params) => {
     videoCodec,
     audioCodec,
     mode,      // 'both' | 'video' | 'audio'
-    outPath
+    outPath,
+    cookiesFrom,      // Cookies kaynağı
+    cookiesFilePath   // Cookies dosya yolu
   } = params;
 
   const needAudio = mode === 'both' || mode === 'audio';
@@ -524,13 +542,25 @@ ipcMain.handle('startExport', async (event, params) => {
   try {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tvcjob_'));
 
-    // İndir (ayrı akışlarda olabilir)
-    await ytdlpExec(url, {
+    // yt-dlp indirme seçenekleri
+    const ytdlpDownloadOptions = {
       format: ytFormat,
       'no-warnings': true,
       'no-check-certificates': true,
       output: path.join(tempDir, 'dl.%(ext)s')
-    });
+    };
+    
+    // Cookies desteği
+    if (cookiesFrom && cookiesFrom !== 'none') {
+      if (cookiesFrom === 'file' && cookiesFilePath) {
+        ytdlpDownloadOptions.cookies = cookiesFilePath;
+      } else {
+        ytdlpDownloadOptions.cookiesFromBrowser = cookiesFrom;
+      }
+    }
+
+    // İndir (ayrı akışlarda olabilir)
+    await ytdlpExec(url, ytdlpDownloadOptions);
 
     // Çıkan dosyaları belirle
     const files = fs.readdirSync(tempDir).map(f => path.join(tempDir, f));
@@ -722,6 +752,23 @@ ipcMain.handle('chooseFolder', async (event) => {
   const { canceled, filePaths } = await dialog.showOpenDialog(bw, {
     title: 'Klasör Seç',
     properties: ['openDirectory', 'createDirectory']
+  });
+  if (canceled || !filePaths || filePaths.length === 0) {
+    return { ok: false, canceled: true };
+  }
+  return { ok: true, path: filePaths[0] };
+});
+
+// ----------------------------- IPC: Cookies Dosyası Seçimi -----------------------------
+ipcMain.handle('chooseCookiesFile', async (event) => {
+  const bw = BrowserWindow.fromWebContents(event.sender);
+  const { canceled, filePaths } = await dialog.showOpenDialog(bw, {
+    title: 'cookies.txt Dosyası Seç',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Cookies File', extensions: ['txt'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
   });
   if (canceled || !filePaths || filePaths.length === 0) {
     return { ok: false, canceled: true };

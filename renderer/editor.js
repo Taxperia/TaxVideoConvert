@@ -353,7 +353,10 @@ exportBtn.addEventListener('click', async () => {
     videoCodec: modeSel.value === 'audio' ? null : vcodecSel.value,
     audioCodec: modeSel.value === 'video' ? null : acodecSel.value,
     mode: modeSel.value,
-    outPath
+    outPath,
+    // Cookies ayarları
+    cookiesFrom: localStorage.getItem('tvc_cookiesFrom') || 'none',
+    cookiesFilePath: localStorage.getItem('tvc_cookiesFilePath') || ''
   };
 
   try {

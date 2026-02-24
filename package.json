@@ -1,10 +1,10 @@
 {
   "name": "tax-video-convert",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "description": "TaxVideoConvert — YouTube videolarını önizle, kırp ve farklı codec/konteynerlerle dışa aktar.",
   "main": "main.js",
   "author": "Miyotu",
-  "license": "MIT",
+  "license": "Apache License 2.0",
   "scripts": {
     "start": "electron .",
     "postinstall": "electron-builder install-app-deps",

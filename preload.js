@@ -28,11 +28,12 @@ contextBridge.exposeInMainWorld('api', {
   },
   
   // Existing API
-  fetchVideoInfo: (url) => ipcRenderer.invoke('fetchVideoInfo', url),
+  fetchVideoInfo: (url, cookiesOptions) => ipcRenderer.invoke('fetchVideoInfo', url, cookiesOptions),
   getLastVideoInfo: () => ipcRenderer.invoke('getLastVideoInfo'),
   openEditorPage: () => ipcRenderer.invoke('openEditorPage'),
   chooseOutputPath: (opts) => ipcRenderer.invoke('chooseOutputPath', opts),
   chooseFolder: () => ipcRenderer.invoke('chooseFolder'),
+  chooseCookiesFile: () => ipcRenderer.invoke('chooseCookiesFile'),
   getDefaultDocumentsPath: () => ipcRenderer.invoke('getDefaultDocumentsPath'),
   startExport: (params) => ipcRenderer.invoke('startExport', params),
   onExportProgress: (cb) => {
