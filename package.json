@@ -19,12 +19,12 @@
     "fluent-ffmpeg": "^2.1.2",
     "js-yaml": "^4.1.0",
     "mime-types": "^2.1.35",
-    "tar": "^7.5.9",
+    "tar": "^7.5.10",
     "yt-dlp-exec": "latest"
   },
   "devDependencies": {
     "electron": "^31.3.0",
-    "electron-builder": "^24.13.3"
+    "electron-builder": "^26.8.1"
   },
   "build": {
     "appId": "com.miyotu.taxvideoconvert",
