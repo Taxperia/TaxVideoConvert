@@ -48,6 +48,7 @@
         <li><a href="#prerequisites">Gereksinimler</a></li>
         <li><a href="#installation">Kurulum</a></li>
         <li><a href="#vendor-setup">FFmpeg ve yt-dlp Kurulumu (Vendor)</a></li>
+        <li><a href="#release">Otomatik Release Yayınlama</a></li>
       </ul>
     </li>
     <li><a href="#usage">Kullanım</a></li>
@@ -131,6 +132,21 @@ TaxVideoConvert/
 
 <p align="right">(<a href="#readme-top">başa dön</a>)</p>
 
+### Otomatik Release Yayınlama <a name="release"></a>
+
+GitHub Actions, `v*` formatında tag gönderildiğinde Windows installer üretir ve GitHub Release'e yükler. Aynı tag için GitHub, kaynak kod `zip` ve `tar.gz` arşivlerini Release sayfasında otomatik gösterir.
+
+Değişiklikleri commitledikten sonra yeni sürüm tag'ini oluşturup gönderin:
+
+```sh
+npm version patch
+git push origin main --tags
+```
+
+> `npm version patch`, örneğin `1.0.9` sürümünü `1.0.10` yapar, commit oluşturur ve `v1.0.10` tag'ini ekler.
+
+<p align="right">(<a href="#readme-top">başa dön</a>)</p>
+
 ---
 
 ## 🎮 Kullanım <a name="usage"></a>
@@ -178,5 +194,5 @@ Bu proje **Apache License 2.0** altında lisanslanmıştır. Detaylar için `LIC
 [Node-url]: https://nodejs.org/
 [License-badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg?style=for-the-badge
 [License-url]: https://opensource.org/licenses/Apache-2.0
-[Version-badge]: https://img.shields.io/badge/version-1.0.7-orange?style=for-the-badge&logo=none
+[Version-badge]: https://img.shields.io/badge/version-1.0.9-orange?style=for-the-badge&logo=none
 [Version-url]: #
