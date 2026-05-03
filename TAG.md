@@ -1,76 +1,78 @@
-# Surum ve Tag Rehberi
+# Repository Topics Rehberi
 
-Bu proje GitHub Actions ile tag uzerinden otomatik release alacak sekilde ayarlanmistir.
+Bu dosya GitHub'daki repo "Topics" alaninda kullanilacak arama etiketlerini listeler.
 
-## Tag formati
+GitHub topics, projenin aramada daha iyi bulunmasini saglar. Ornek: `mp4`, `nodejs`, `electron`, `ffmpeg`.
 
-Tag adlari semantik surum formatinda olmalidir:
+## Onerilen topics
 
-```text
-vMAJOR.MINOR.PATCH
-```
-
-Ornekler:
+Bu proje icin onerilen GitHub topics:
 
 ```text
-v1.0.9
-v1.0.10
-v1.1.0
-v2.0.0
+mp4
+video-converter
+electron
+nodejs
+ffmpeg
+yt-dlp
+youtube
+video-editing
+desktop-app
+windows
+media-tools
+webm
+mkv
+h264
+hevc
+av1
+video-export
+open-source
+nsis
+electron-builder
 ```
 
-## Mevcut surum
+## En onemli 10 topic
 
-Projenin mevcut `package.json` surumu:
+GitHub aramalarinda daha sade gorunmesi icin once sunlari kullanmak yeterlidir:
 
 ```text
-1.0.9
+mp4
+video-converter
+electron
+nodejs
+ffmpeg
+yt-dlp
+youtube
+desktop-app
+windows
+video-editing
 ```
 
-Bu surum icin tag:
+## GitHub'da manuel ekleme
 
-```text
-v1.0.9
-```
+1. GitHub'da repo sayfasini acin.
+2. Sag tarafta veya repo ust kisminda "About" bolumundeki disli ikonuna tiklayin.
+3. "Topics" alanina etiketleri tek tek yazin.
+4. "Save changes" ile kaydedin.
 
-## Yeni release cikarma
+## GitHub CLI ile ekleme
 
-Patch surum icin:
+Bilgisayarda GitHub CLI (`gh`) kuruluysa:
 
 ```powershell
-npm version patch
-git push origin main --tags
+gh repo edit Taxperia/TaxVideoConvert `
+  --add-topic mp4 `
+  --add-topic video-converter `
+  --add-topic electron `
+  --add-topic nodejs `
+  --add-topic ffmpeg `
+  --add-topic yt-dlp `
+  --add-topic youtube `
+  --add-topic desktop-app `
+  --add-topic windows `
+  --add-topic video-editing
 ```
 
-Minor surum icin:
+## Not
 
-```powershell
-npm version minor
-git push origin main --tags
-```
-
-Major surum icin:
-
-```powershell
-npm version major
-git push origin main --tags
-```
-
-## Ne olur?
-
-`v*` formatinda tag GitHub'a gonderildiginde:
-
-1. GitHub Actions Windows ortaminda projeyi kurar.
-2. `npm run dist-win -- --publish never` komutu ile installer uretir.
-3. GitHub Release olusturur veya mevcut release'i gunceller.
-4. `dist/*.exe`, `dist/*.exe.blockmap` ve `dist/latest.yml` dosyalarini Release'e yukler.
-5. GitHub kaynak kod arsivlerini otomatik ekler:
-   - `Source code (zip)`
-   - `Source code (tar.gz)`
-
-## Dikkat edilmesi gerekenler
-
-- `package.json` surumu ile tag adi ayni olmalidir.
-- `dist/`, `node_modules/` ve `.npm-cache/` repo'ya eklenmemelidir.
-- Installer dosyalari Code sekmesine degil, Releases sekmesine yuklenir.
-- Kaynak kod dosyalari Code sekmesine `git add`, `git commit`, `git push` ile gider.
+Bu dosyadaki liste sadece referanstir. GitHub topics alanini degistirmek icin GitHub arayuzunden kaydetmek veya `gh repo edit` komutunu calistirmak gerekir.
