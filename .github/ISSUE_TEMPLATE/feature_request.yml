@@ -1,5 +1,5 @@
 name: Feature request
-description: Yeni ozellik veya iyilestirme onerisi
+description: Yeni özellik veya iyileştirme önerisi
 title: "[Feature]: "
 labels:
   - enhancement
@@ -7,16 +7,16 @@ body:
   - type: textarea
     id: problem
     attributes:
-      label: Cozulmek istenen problem
-      description: Bu ozellik hangi ihtiyaci karsilayacak?
-      placeholder: "Disari aktarma ayarlarinda..."
+      label: Çözülmek istenen problem
+      description: Bu özellik hangi ihtiyacı karşılayacak?
+      placeholder: "Dışarı aktarma ayarlarında..."
     validations:
       required: true
   - type: textarea
     id: solution
     attributes:
-      label: Onerilen cozum
-      description: Nasil calismasini istiyorsunuz?
+      label: Önerilen çözüm
+      description: Nasıl çalışmasını istiyorsunuz?
       placeholder: "Ayarlar paneline..."
     validations:
       required: true
@@ -24,7 +24,7 @@ body:
     id: alternatives
     attributes:
       label: Alternatifler
-      description: Dusundugunuz baska cozumler varsa yazin.
+      description: Düşündüğünüz başka çözümler varsa yazın.
   - type: dropdown
     id: area
     attributes:
@@ -44,7 +44,7 @@ body:
     attributes:
       label: Kontrol listesi
       options:
-        - label: Benzer bir ozellik istegi olup olmadigini kontrol ettim.
+        - label: Benzer bir özellik isteği olup olmadığını kontrol ettim.
           required: true
-        - label: Oneri, baskalarinin haklarini ihlal edecek kullanimlari tesvik etmiyor.
+        - label: Öneri, başkalarının haklarını ihlal edecek kullanımları teşvik etmiyor.
           required: true

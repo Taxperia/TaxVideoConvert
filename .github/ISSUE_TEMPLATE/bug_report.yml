@@ -1,5 +1,5 @@
 name: Bug report
-description: Uygulamadaki bir hatayi bildirin
+description: Uygulamadaki bir hatayı bildirin
 title: "[Bug]: "
 labels:
   - bug
@@ -7,69 +7,69 @@ body:
   - type: markdown
     attributes:
       value: |
-        Hatayi hizli inceleyebilmemiz icin lutfen alanlari mumkun oldugunca net doldurun.
+        Hatayı hızlı inceleyebilmemiz için lütfen alanları mümkün olduğunca net doldurun.
   - type: input
     id: version
     attributes:
-      label: Uygulama surumu
-      description: "Ornek: 1.0.9"
+      label: Uygulama sürümü
+      description: "Örnek: 1.0.9"
       placeholder: "1.0.9"
     validations:
       required: true
   - type: input
     id: os
     attributes:
-      label: Isletim sistemi
-      description: Windows surumu ve mimari bilgisi
+      label: İşletim sistemi
+      description: Windows sürümü ve mimari bilgisi
       placeholder: "Windows 11 x64"
     validations:
       required: true
   - type: textarea
     id: summary
     attributes:
-      label: Hata ozeti
+      label: Hata özeti
       description: Ne oldu?
-      placeholder: "Video onizleme acilmiyor..."
+      placeholder: "Video önizleme açılmıyor..."
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Yeniden uretme adimlari
-      description: Hatayi nasil tekrar olusturabiliriz?
+      label: Yeniden üretme adımları
+      description: Hatayı nasıl tekrar oluşturabiliriz?
       placeholder: |
-        1. Uygulamayi ac
+        1. Uygulamayı aç
         2. URL gir
-        3. Onizleme butonuna bas
-        4. Hata gorunur
+        3. Önizleme butonuna bas
+        4. Hata görünür
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Beklenen davranis
-      placeholder: "Video onizlemesi baslamaliydi."
+      placeholder: "Video önizlemesi başlamalıydı."
     validations:
       required: true
   - type: textarea
     id: actual
     attributes:
-      label: Gercek davranis
-      placeholder: "Onizleme alani bos kaliyor."
+      label: Gerçek davranış
+      placeholder: "Önizleme alanı boş kalıyor."
     validations:
       required: true
   - type: textarea
     id: logs
     attributes:
-      label: Log veya ekran goruntusu
-      description: Varsa hata mesaji, konsol ciktisi veya ekran goruntusu ekleyin.
+      label: Log veya ekran görüntüsü
+      description: Varsa hata mesajı, konsol çıktısı veya ekran görüntüsü ekleyin.
       render: text
   - type: checkboxes
     id: checks
     attributes:
       label: Kontrol listesi
       options:
-        - label: Ayni sorun icin mevcut issue'lari kontrol ettim.
+        - label: Aynı sorun için mevcut issue'ları kontrol ettim.
           required: true
-        - label: Bu rapor yalnizca kullanma hakkim olan iceriklerle ilgilidir.
+        - label: Bu rapor yalnızca kullanma hakkım olan içeriklerle ilgilidir.
           required: true

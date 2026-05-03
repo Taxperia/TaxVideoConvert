@@ -1,5 +1,5 @@
 name: Support question
-description: Kurulum, kullanim veya build hakkinda soru sorun
+description: Kurulum, kullanım veya build hakkında soru sorun
 title: "[Question]: "
 labels:
   - question
@@ -8,18 +8,18 @@ body:
     id: question
     attributes:
       label: Sorunuz
-      description: Neyi yapmaya calisiyorsunuz?
-      placeholder: "Release nasil cikartilir?"
+      description: Neyi yapmaya çalışıyorsunuz?
+      placeholder: "Release nasıl çıkartılır?"
     validations:
       required: true
   - type: input
     id: version
     attributes:
-      label: Uygulama surumu
+      label: Uygulama sürümü
       placeholder: "1.0.9"
   - type: textarea
     id: context
     attributes:
       label: Ek bilgi
-      description: Komut ciktisi, ekran goruntusu veya ilgili dosya bilgisi ekleyebilirsiniz.
+      description: Komut çıktısı, ekran görüntüsü veya ilgili dosya bilgisi ekleyebilirsiniz.
       render: text

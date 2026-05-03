@@ -1,28 +1,28 @@
-## Summary
+## Özet
 
 - 
 
-## Type of change
+## Değişiklik Türü
 
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation
-- [ ] Security
-- [ ] Refactor / maintenance
+- [ ] Hata düzeltmesi
+- [ ] Yeni özellik
+- [ ] Dokümantasyon
+- [ ] Güvenlik
+- [ ] Refactor / bakım
 
-## Checks
+## Kontroller
 
-- [ ] I tested the change locally.
-- [ ] I updated documentation if needed.
-- [ ] I did not commit `dist/`, `node_modules/`, `.npm-cache/`, or unrelated generated files.
-- [ ] I reviewed the diff before opening this PR.
+- [ ] Değişikliği yerelde test ettim.
+- [ ] Gerekiyorsa dokümantasyonu güncelledim.
+- [ ] `dist/`, `node_modules/`, `.npm-cache/` veya ilgisiz üretilmiş dosyaları commit etmedim.
+- [ ] Bu PR'ı açmadan önce diff'i gözden geçirdim.
 
-## Test notes
+## Test Notları
 
 ```text
-Paste commands and results here.
+Komutları ve sonuçları buraya ekleyin.
 ```
 
-## Screenshots
+## Ekran Görüntüleri
 
-Add screenshots for UI changes.
+UI değişiklikleri için ekran görüntüsü ekleyin.
