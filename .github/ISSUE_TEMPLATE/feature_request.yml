@@ -1,0 +1,50 @@
+name: Feature request
+description: Yeni ozellik veya iyilestirme onerisi
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Cozulmek istenen problem
+      description: Bu ozellik hangi ihtiyaci karsilayacak?
+      placeholder: "Disari aktarma ayarlarinda..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Onerilen cozum
+      description: Nasil calismasini istiyorsunuz?
+      placeholder: "Ayarlar paneline..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatifler
+      description: Dusundugunuz baska cozumler varsa yazin.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Etkilenen alan
+      options:
+        - Video preview
+        - Editor
+        - Export
+        - Settings
+        - Installer / updater
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Kontrol listesi
+      options:
+        - label: Benzer bir ozellik istegi olup olmadigini kontrol ettim.
+          required: true
+        - label: Oneri, baskalarinin haklarini ihlal edecek kullanimlari tesvik etmiyor.
+          required: true

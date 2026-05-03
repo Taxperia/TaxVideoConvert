@@ -1,0 +1,75 @@
+name: Bug report
+description: Uygulamadaki bir hatayi bildirin
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hatayi hizli inceleyebilmemiz icin lutfen alanlari mumkun oldugunca net doldurun.
+  - type: input
+    id: version
+    attributes:
+      label: Uygulama surumu
+      description: "Ornek: 1.0.9"
+      placeholder: "1.0.9"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Isletim sistemi
+      description: Windows surumu ve mimari bilgisi
+      placeholder: "Windows 11 x64"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Hata ozeti
+      description: Ne oldu?
+      placeholder: "Video onizleme acilmiyor..."
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Yeniden uretme adimlari
+      description: Hatayi nasil tekrar olusturabiliriz?
+      placeholder: |
+        1. Uygulamayi ac
+        2. URL gir
+        3. Onizleme butonuna bas
+        4. Hata gorunur
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Beklenen davranis
+      placeholder: "Video onizlemesi baslamaliydi."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Gercek davranis
+      placeholder: "Onizleme alani bos kaliyor."
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log veya ekran goruntusu
+      description: Varsa hata mesaji, konsol ciktisi veya ekran goruntusu ekleyin.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Kontrol listesi
+      options:
+        - label: Ayni sorun icin mevcut issue'lari kontrol ettim.
+          required: true
+        - label: Bu rapor yalnizca kullanma hakkim olan iceriklerle ilgilidir.
+          required: true
