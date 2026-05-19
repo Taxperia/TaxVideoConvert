@@ -10,8 +10,8 @@ const path = require('path');
 const express = require('express');
 const http = require('http');
 const https = require('https');
-const urlLib = require('url');
 const dns = require('dns');
+const net = require('net');
 const os = require('os');
 const fs = require('fs');
 const crypto = require('crypto');
@@ -146,85 +146,160 @@ if (isDev) {
 }
 
 // ----------------------------- Proxy (CORS + Range) -----------------------------
-async function isUrlSafe(targetUrl) {
+const proxyTargets = new Map();
+const PROXY_TARGET_TTL_MS = 30 * 60 * 1000;
+
+function makeProxyError(message, statusCode = 403) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  return err;
+}
+
+function cleanupProxyTargets() {
+  const expiresBefore = Date.now() - PROXY_TARGET_TTL_MS;
+  for (const [id, entry] of proxyTargets) {
+    if (entry.createdAt < expiresBefore) proxyTargets.delete(id);
+  }
+}
+
+function registerProxyTarget(rawUrl) {
+  cleanupProxyTargets();
+  const id = crypto.randomBytes(16).toString('hex');
+  proxyTargets.set(id, { url: rawUrl, createdAt: Date.now() });
+  return id;
+}
+
+function isBlockedIp(address) {
+  const family = net.isIP(address);
+  if (family === 4) {
+    const parts = address.split('.').map(part => Number(part));
+    if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return true;
+    const [a, b, c] = parts;
+    return (
+      a === 0 ||
+      a === 10 ||
+      a === 127 ||
+      a === 169 && b === 254 ||
+      a === 172 && b >= 16 && b <= 31 ||
+      a === 192 && b === 168 ||
+      a === 192 && b === 0 && c === 0 ||
+      a === 192 && b === 0 && c === 2 ||
+      a === 198 && (b === 18 || b === 19) ||
+      a === 198 && b === 51 && c === 100 ||
+      a === 203 && b === 0 && c === 113 ||
+      a >= 224
+    );
+  }
+
+  if (family === 6) {
+    const lower = address.toLowerCase();
+    const mappedIpv4 = lower.match(/::ffff:(\d+\.\d+\.\d+\.\d+)$/);
+    if (mappedIpv4) return isBlockedIp(mappedIpv4[1]);
+    return (
+      lower === '::' ||
+      lower === '::1' ||
+      lower.startsWith('fc') ||
+      lower.startsWith('fd') ||
+      lower.startsWith('fe80:') ||
+      lower.startsWith('ff')
+    );
+  }
+
+  return true;
+}
+
+function isBlockedHostname(hostname) {
+  const normalized = String(hostname || '').replace(/^\[|\]$/g, '').toLowerCase();
+  if (!normalized) return true;
+  if (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized.endsWith('.local') ||
+    normalized.endsWith('.lan')
+  ) {
+    return true;
+  }
+  return net.isIP(normalized) ? isBlockedIp(normalized) : false;
+}
+
+async function resolvePublicAddresses(hostname) {
+  const family = net.isIP(hostname);
+  const records = family
+    ? [{ address: hostname, family }]
+    : await dns.promises.lookup(hostname, { all: true, verbatim: true });
+
+  if (!records.length) throw makeProxyError('Proxy target could not be resolved.', 403);
+  if (records.some(record => isBlockedIp(record.address))) {
+    throw makeProxyError('Proxy target resolves to a private or reserved network.', 403);
+  }
+  return records;
+}
+
+async function buildSafeProxyRequest(rawUrl, rangeHeader) {
   try {
-    const parsed = urlLib.parse(targetUrl);
-    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
-    
-    const hostname = parsed.hostname;
-    if (!hostname) return false;
-    
-    // Check known loopback/private patterns on hostname (before DNS)
-    if (hostname.toLowerCase() === 'localhost') return false;
-    if (hostname === '::1' || hostname === '[::1]') return false;
-    if (hostname.startsWith('127.')) return false;
-    if (hostname.startsWith('10.')) return false;
-    if (hostname.startsWith('192.168.')) return false;
-    if (hostname.startsWith('169.254.')) return false;
-    // 172.16.x.x - 172.31.x.x
-    const parts = hostname.split('.');
-    if (parts.length === 4 && parts[0] === '172') {
-        const second = parseInt(parts[1], 10);
-        if (second >= 16 && second <= 31) return false;
+    const parsed = new URL(rawUrl);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw makeProxyError('Only http and https proxy targets are allowed.', 403);
     }
-    
-    // Resolve Hostname to IP to catch domains pointing to private IPs
-    return new Promise((resolve) => {
-        dns.lookup(hostname, { family: 4 }, (err, address) => {
-            if (err) {
-                // Determine if we should fail open or closed. Failing closed (reject) is safer.
-                return resolve(false);
-            }
-            if (!address) return resolve(false);
-            
-            // Re-check resolved IP
-            if (address.startsWith('127.')) return resolve(false);
-            if (address.startsWith('10.')) return resolve(false);
-            if (address.startsWith('192.168.')) return resolve(false);
-            if (address.startsWith('169.254.')) return resolve(false);
-            
-            const ipParts = address.split('.');
-            if (ipParts.length === 4 && ipParts[0] === '172') {
-                const second = parseInt(ipParts[1], 10);
-                if (second >= 16 && second <= 31) return resolve(false);
-            }
-            
-            resolve(true);
-        });
-    });
+    if (parsed.username || parsed.password) {
+      throw makeProxyError('Proxy targets with credentials are not allowed.', 403);
+    }
+    if (isBlockedHostname(parsed.hostname)) {
+      throw makeProxyError('Proxy target host is private or reserved.', 403);
+    }
+
+    const records = await resolvePublicAddresses(parsed.hostname);
+    const selected = records[0];
+    const headers = {
+      'Host': parsed.host,
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Referer': 'https://www.youtube.com/',
+      'Origin': 'https://www.youtube.com',
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9'
+    };
+    if (rangeHeader) headers['Range'] = String(rangeHeader).slice(0, 128);
+
+    return {
+      client: parsed.protocol === 'https:' ? https : http,
+      displayUrl: parsed.href,
+      options: {
+        protocol: parsed.protocol,
+        hostname: selected.address,
+        port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+        path: `${parsed.pathname}${parsed.search}`,
+        method: 'GET',
+        headers,
+        servername: parsed.hostname,
+        family: selected.family,
+        lookup: (hostname, options, callback) => callback(null, selected.address, selected.family),
+        timeout: 30000
+      }
+    };
   } catch (e) {
-      return false;
+    if (e.statusCode) throw e;
+    throw makeProxyError('Invalid proxy target URL.', 400);
   }
 }
 
 async function startProxy() {
   const exapp = express();
 
-  exapp.get('/proxy', async (req, res) => {
-    const target = req.query.url;
-    if (!target) return res.status(400).send('Missing url');
+  exapp.get('/proxy/:id', async (req, res) => {
+    const entry = proxyTargets.get(req.params.id);
+    if (!entry) return res.status(404).send('Proxy target expired or not found.');
 
-    // SSRF Protection
-    const safe = await isUrlSafe(target);
-    if (!safe) {
-        console.warn('[Proxy] Blocked unsafe URL:', target);
-        return res.status(403).send('Forbidden: Access to private resources or invalid URL is denied.');
+    let request;
+    try {
+      request = await buildSafeProxyRequest(entry.url, req.headers['range']);
+    } catch (err) {
+      console.warn('[Proxy] Blocked target:', err.message);
+      return res.status(err.statusCode || 403).send(err.message);
     }
 
-    const headers = {};
-    if (req.headers['range']) headers['Range'] = req.headers['range'];
-    headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-    headers['Referer'] = 'https://www.youtube.com/';
-    headers['Origin'] = 'https://www.youtube.com';
-    headers['Accept'] = '*/*';
-    headers['Accept-Language'] = 'en-US,en;q=0.9';
+    console.log('[Proxy] Fetching:', request.displayUrl.substring(0, 80) + '...');
 
-    const parsed = urlLib.parse(target);
-    const client = parsed.protocol === 'https:' ? https : http;
-
-    console.log('[Proxy] Fetching:', target.substring(0, 80) + '...');
-
-    const proxReq = client.get(target, { headers }, proxRes => {
+    const proxReq = request.client.get(request.options, proxRes => {
       console.log('[Proxy] Response status:', proxRes.statusCode, 'Content-Type:', proxRes.headers['content-type']);
       
       // Content-Type'ı düzelt (video için)
@@ -256,13 +331,17 @@ async function startProxy() {
       if (!res.headersSent) res.status(502).send('Proxy error: ' + err.message);
     });
 
+    proxReq.setTimeout(30000, () => {
+      proxReq.destroy(new Error('Proxy request timed out.'));
+    });
+
     req.on('close', () => {
       proxReq.destroy();
     });
   });
 
   return new Promise((resolve) => {
-    const server = exapp.listen(0, () => {
+    const server = exapp.listen(0, '127.0.0.1', () => {
       const { port } = server.address();
       console.log('[Proxy] Started on port', port);
       resolve({ server, port });
@@ -428,7 +507,6 @@ ipcMain.handle('fetchVideoInfo', async (event, url, cookiesOptions) => {
     // yt-dlp seçenekleri
     const ytdlpOptions = {
       dumpSingleJson: true,
-      noCheckCertificates: true,
       noWarnings: true,
       preferFreeFormats: false
     };
@@ -486,7 +564,8 @@ ipcMain.handle('fetchVideoInfo', async (event, url, cookiesOptions) => {
       });
 
     const previewFormat = progressive[0] || videoOnly[0] || null;
-    const previewUrl = previewFormat ? `http://127.0.0.1:${proxyPort}/proxy?url=${encodeURIComponent(previewFormat.url)}` : null;
+    const previewId = previewFormat ? registerProxyTarget(previewFormat.url) : null;
+    const previewUrl = previewId ? `http://127.0.0.1:${proxyPort}/proxy/${previewId}` : null;
     
     console.log('[Preview] All formats count:', formats.length);
     console.log('[Preview] Progressive (playable) formats:', progressive.length);
@@ -512,7 +591,6 @@ ipcMain.handle('fetchVideoInfo', async (event, url, cookiesOptions) => {
       tbr: f.tbr,
       abr: f.abr,
       asr: f.asr,
-      url: f.url || null,
       container: f.container || null
     }));
 
@@ -607,7 +685,6 @@ ipcMain.handle('startExport', async (event, params) => {
     const ytdlpDownloadOptions = {
       format: ytFormat,
       'no-warnings': true,
-      'no-check-certificates': true,
       output: path.join(tempDir, 'dl.%(ext)s')
     };
     
@@ -797,10 +874,18 @@ ipcMain.handle('revealInFolder', async (event, filePath) => {
   }
 });
 
+function sanitizeExternalUrl(rawUrl) {
+  const parsed = new URL(String(rawUrl || ''));
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error('Only http and https links can be opened.');
+  }
+  return parsed.href;
+}
+
 // ----------------------------- IPC: Harici URL Aç -----------------------------
 ipcMain.handle('openExternal', async (event, url) => {
   try {
-    await shell.openExternal(url);
+    await shell.openExternal(sanitizeExternalUrl(url));
     return { ok: true };
   } catch (e) {
     return { ok: false, error: String(e) };

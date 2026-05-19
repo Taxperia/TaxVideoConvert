@@ -375,8 +375,12 @@ exportBtn.addEventListener('click', async () => {
       return;
     }
     progressEl.textContent = '';
-    doneEl.innerHTML = `${t('completed')}${result.outPath} <button id="reveal">${t('showInFolder')}</button>`;
-    document.getElementById('reveal').addEventListener('click', async () => {
+    doneEl.textContent = `${t('completed')}${result.outPath} `;
+    const revealBtn = document.createElement('button');
+    revealBtn.id = 'reveal';
+    revealBtn.textContent = t('showInFolder');
+    doneEl.appendChild(revealBtn);
+    revealBtn.addEventListener('click', async () => {
       await window.api.revealInFolder(result.outPath);
     });
   } catch (err) {
@@ -408,10 +412,12 @@ async function init() {
   endSec = duration || 0;
   refreshRangeUI();
 
-  metaEl.innerHTML = `
-    ${t('duration')}: ${fmtTime(duration)}<br/>
-    ${t('channel')}: ${videoInfo.uploader || videoInfo.channel || '-'}
-  `;
+  metaEl.textContent = '';
+  const durationLine = document.createElement('div');
+  durationLine.textContent = `${t('duration')}: ${fmtTime(duration)}`;
+  const channelLine = document.createElement('div');
+  channelLine.textContent = `${t('channel')}: ${videoInfo.uploader || videoInfo.channel || '-'}`;
+  metaEl.append(durationLine, channelLine);
 
   const thumbnailFallback = document.getElementById('thumbnailFallback');
   const thumbnailImg = document.getElementById('thumbnailImg');
